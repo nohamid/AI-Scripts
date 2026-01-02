@@ -193,11 +193,13 @@ except Exception as e:
             )
             
             if result.returncode != 0:
-                error_msg = result.stderr if result.stderr else "Unknown error"
+                error_msg = result.stderr if result.stderr else result.stdout if result.stdout else "Unknown error occurred"
                 return jsonify({
                     'status': 'error',
                     'script': script_name,
                     'message': error_msg,
+                    'stdout': result.stdout,
+                    'stderr': result.stderr,
                     'timestamp': datetime.now().isoformat()
                 }), 400
             
