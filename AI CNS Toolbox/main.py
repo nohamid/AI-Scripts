@@ -16,12 +16,12 @@ VALID_PASSWORD = 'cisco'
 AVAILABLE_SCRIPTS = {
     'config_generator': {
         'name': 'Config Generator',
-        'description': 'Automatically generate device configuration with IP assignment',
+        'description': 'Automatically generate device configuration for management access',
         'icon': '⚙️'
     },
     'config_backup': {
         'name': 'Configuration Backup',
-        'description': 'Backup device configurations',
+        'description': 'Backup device configuration to Everlast and copy to clipboard',
         'icon': '💾'
     },
     'device_inventory': {
