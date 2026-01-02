@@ -180,8 +180,8 @@ print(output)
 # Copy Configuration automatically to clipboard
 try:
     pyperclip.copy(output)
-except Exception as e:
-    print(f"⚠️ Could not copy to clipboard: {{str(e)}}")
+except Exception:
+    pass
 """
             
             # Execute the runner code
