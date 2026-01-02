@@ -176,7 +176,12 @@ output = (
     f"exit\\n"
 )
 print(output)
-pyperclip.copy(output)
+
+# Copy Configuration automatically to clipboard
+try:
+    pyperclip.copy(output)
+except Exception as e:
+    print(f"⚠️ Could not copy to clipboard: {{str(e)}}")
 """
             
             # Execute the runner code

@@ -68,6 +68,9 @@ output = (
 print(output)
 
 # Copy Configuration automatically to clipboard
-
-print("✅ Configuration copied to clipboard!")
-pyperclip.copy(output)
+try:
+    pyperclip.copy(output)
+    print("✅ Configuration copied to clipboard!")
+except Exception as e:
+    print(f"⚠️  Could not copy to clipboard: {str(e)}")
+    print("💡 On Linux, install xclip: sudo apt-get install xclip")
