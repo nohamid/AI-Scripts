@@ -109,79 +109,27 @@ def run_script(script_id):
                     'timestamp': datetime.now().isoformat()
                 }), 400
             
-            # Run the Config Generator script directly
+            # Run the Config Generator script via subprocess to load the actual module
             script_dir = Path(__file__).parent / 'Self Written Scripts' / 'Config Generator'
-            env = os.environ.copy()
-            env['PYTHONPATH'] = str(script_dir)
             
-            # Create a simple Python script that imports and runs the config generator with inputs
+            # Create a wrapper that runs the actual config generator module
             runner_code = f"""
 import sys
-import ipaddress
-from icmplib import ping
-import pyperclip
-
-# Add the script directory to path
 sys.path.insert(0, r'{str(script_dir)}')
 
+from unittest.mock import patch
+
 interface = r'{interface}'
-IP = r'{ip_with_prefix}'
+ip_with_prefix = r'{ip_with_prefix}'
 
-# Get the first IP address of the subnet for default route:
-network = ipaddress.ip_network(IP, strict=False)
-first_usable_ip = network[1]
-
-# Substract IP Address and Subnet Mask: 
-try:
-    iface = ipaddress.IPv4Interface(IP)
-    ip_only = str(iface.ip)
-    mask_only = iface.netmask
-except ValueError:
-    print("Invalid Format: IP/Prefix (z.B. 10.49.208.1/25).")
-    sys.exit(1)
-
-# Check if IP Address is free or already in Use: 
-def check_device(ip_only):
-    host = ping(ip_only, count=2, interval=0.2)
-    if host.is_alive:
-        return False
-    return True
-
-if not check_device(ip_only):
-    print(f"ERROR: The IP address is already in use! {{ip_only}}")
-    sys.exit(1)
-
-# Output of the configuration:
-output = ( 
-    f"enable\\n"
-    f"configure terminal\\n"
-    f"vrf definition Mgmt-vrf\\n"
-    f"address-family ipv4\\n"
-    f"exit\\n"
-    f"exit\\n"
-    f"interface {{interface}}\\n"
-    f"vrf forwarding Mgmt-vrf\\n"
-    f"IP address {{ip_only}} {{mask_only}}\\n"
-    f"no shut\\n"
-    f"cdp enable\\n"
-    f"exit\\n"
-    f"ip domain name cisco.com\\n"
-    f"IP route vrf Mgmt-vrf 0.0.0.0 0.0.0.0 {{first_usable_ip}}\\n"
-    f"hostname auto-provisioned\\n"
-    f"crypto key generate rsa modulus 2048\\n"
-    f"username admin privilege 15 password cisco\\n"
-    f"line vty 0 4\\n"
-    f"transport input ssh\\n"
-    f"login local\\n"
-    f"exit\\n"
-)
-print(output)
-
-# Copy Configuration automatically to clipboard
-try:
-    pyperclip.copy(output)
-except Exception:
-    pass
+# Simulate user inputs by mocking input()
+inputs = [interface, ip_with_prefix]
+with patch('builtins.input', side_effect=inputs):
+    try:
+        # Execute the actual config generator script with mocked inputs
+        exec(open(r'{str(script_dir)}/main.py').read())
+    except SystemExit:
+        pass  # Ignore sys.exit() calls from the script
 """
             
             # Execute the runner code
