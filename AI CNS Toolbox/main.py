@@ -1,9 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import os
+import sys
+import subprocess
 from datetime import datetime
 from functools import wraps
+from pathlib import Path
 from ftp_backup_module import backup_device_config
-from config_generator_module import generate_config
+
+# Add the Self Written Scripts folder to path
+config_gen_script_path = Path(__file__).parent / 'Self Written Scripts' / 'Config Generator' / 'main.py'
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'your-secret-key-change-this'
@@ -104,29 +109,104 @@ def run_script(script_id):
                     'timestamp': datetime.now().isoformat()
                 }), 400
             
-            # Run the config generator
-            result = generate_config(interface, ip_with_prefix)
+            # Run the Config Generator script directly
+            script_dir = Path(__file__).parent / 'Self Written Scripts' / 'Config Generator'
+            env = os.environ.copy()
+            env['PYTHONPATH'] = str(script_dir)
             
-            # Format result for frontend
-            if result['status'] == 'success':
-                return jsonify({
-                    'status': 'success',
-                    'script': script_name,
-                    'message': result['message'],
-                    'interface': result.get('interface'),
-                    'ip': result.get('ip'),
-                    'netmask': result.get('netmask'),
-                    'gateway': result.get('gateway'),
-                    'config': result.get('config'),
-                    'timestamp': datetime.now().isoformat()
-                })
-            else:
+            # Create a simple Python script that imports and runs the config generator with inputs
+            runner_code = f"""
+import sys
+import ipaddress
+from icmplib import ping
+import pyperclip
+
+# Add the script directory to path
+sys.path.insert(0, r'{str(script_dir)}')
+
+interface = r'{interface}'
+IP = r'{ip_with_prefix}'
+
+# Get the first IP address of the subnet for default route:
+network = ipaddress.ip_network(IP, strict=False)
+first_usable_ip = network[1]
+
+# Substract IP Address and Subnet Mask: 
+try:
+    iface = ipaddress.IPv4Interface(IP)
+    ip_only = str(iface.ip)
+    mask_only = iface.netmask
+except ValueError:
+    print("Invalid Format: IP/Prefix (z.B. 10.49.208.1/25).")
+    sys.exit(1)
+
+# Check if IP Address is free or already in Use: 
+def check_device(ip_only):
+    host = ping(ip_only, count=2, interval=0.2)
+    if host.is_alive:
+        return False
+    return True
+
+if not check_device(ip_only):
+    print(f"ERROR: The IP address is already in use! {{ip_only}}")
+    sys.exit(1)
+
+# Output of the configuration:
+output = ( 
+    f"enable\\n"
+    f"configure terminal\\n"
+    f"vrf definition Mgmt-vrf\\n"
+    f"address-family ipv4\\n"
+    f"exit\\n"
+    f"exit\\n"
+    f"interface {{interface}}\\n"
+    f"vrf forwarding Mgmt-vrf\\n"
+    f"IP address {{ip_only}} {{mask_only}}\\n"
+    f"no shut\\n"
+    f"cdp enable\\n"
+    f"exit\\n"
+    f"ip domain name cisco.com\\n"
+    f"IP route vrf Mgmt-vrf 0.0.0.0 0.0.0.0 {{first_usable_ip}}\\n"
+    f"hostname auto-provisioned\\n"
+    f"crypto key generate rsa modulus 2048\\n"
+    f"username admin privilege 15 password cisco\\n"
+    f"line vty 0 4\\n"
+    f"transport input ssh\\n"
+    f"login local\\n"
+    f"exit\\n"
+)
+print(output)
+pyperclip.copy(output)
+"""
+            
+            # Execute the runner code
+            result = subprocess.run(
+                [sys.executable, '-c', runner_code],
+                capture_output=True,
+                text=True,
+                cwd=str(script_dir)
+            )
+            
+            if result.returncode != 0:
+                error_msg = result.stderr if result.stderr else "Unknown error"
                 return jsonify({
                     'status': 'error',
                     'script': script_name,
-                    'message': result['message'],
+                    'message': error_msg,
                     'timestamp': datetime.now().isoformat()
                 }), 400
+            
+            config_output = result.stdout.strip()
+            
+            return jsonify({
+                'status': 'success',
+                'script': script_name,
+                'message': 'Configuration generated successfully',
+                'interface': interface,
+                'ip': ip_with_prefix,
+                'config': config_output,
+                'timestamp': datetime.now().isoformat()
+            })
         
         except Exception as e:
             return jsonify({
