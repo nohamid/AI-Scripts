@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNS Skynet - Login</title>
+    <title>Skynet CNS Toolbox - Login</title>
     <style>
         * {
             margin: 0;
@@ -12,24 +12,29 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, rgba(30, 60, 114, 0.2) 0%, rgba(42, 82, 152, 0.2) 100%), 
-                        url('/static/k1bwzq7vk0od1.png') center/cover no-repeat;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%), 
+                        url('{{ url_for("static", filename="terminator-skynet-robot-aq1a9pywdc9684bk.jpg") }}');
+            background-size: cover;
+            background-position: center;
             background-attachment: fixed;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .login-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 113, 227, 0.1);
             width: 100%;
             max-width: 400px;
-            padding: 40px;
-            animation: slideIn 0.5s ease-out;
+            padding: 60px 40px;
+            animation: slideIn 0.6s ease-out;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
         @keyframes slideIn {
@@ -45,82 +50,98 @@
 
         .logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
         }
 
         .logo h1 {
-            color: #1e3c72;
-            font-size: 28px;
-            margin-bottom: 5px;
+            color: #1a1a1a;
+            font-size: 32px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         .logo p {
-            color: #666;
-            font-size: 12px;
+            color: #999;
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            font-weight: 500;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-            font-size: 14px;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.3px;
         }
 
         input[type="text"],
         input[type="password"] {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
+            padding: 14px 16px;
+            border: 1.5px solid #e5e5e5;
+            border-radius: 12px;
             font-size: 14px;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
+            background: #fafafa;
         }
 
         input[type="text"]:focus,
         input[type="password"]:focus {
             outline: none;
-            border-color: #2a5298;
-            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+            border-color: #0071e3;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.05);
         }
 
         button {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #0071e3 0%, #0052cc 100%);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(0, 113, 227, 0.15);
         }
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 113, 227, 0.25);
+            background: linear-gradient(135deg, #0077f0 0%, #0055d4 100%);
         }
 
         button:active {
             transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
         }
 
         .error-message {
-            background: #fee;
-            border: 1px solid #fcc;
-            color: #c33;
-            padding: 12px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
             font-size: 14px;
             animation: shake 0.3s;
+            border-left: 4px solid #c53030;
         }
 
         @keyframes shake {
@@ -131,24 +152,35 @@
 
         .info-box {
             background: #f0f8ff;
-            border-left: 4px solid #2a5298;
-            padding: 12px;
-            margin-top: 20px;
-            font-size: 12px;
-            color: #666;
-            border-radius: 3px;
+            border: 1px solid #bae6fd;
+            padding: 16px;
+            margin-top: 32px;
+            font-size: 13px;
+            color: #0369a1;
+            border-radius: 12px;
+            border-left: 4px solid #0071e3;
         }
 
         .info-box strong {
-            color: #1e3c72;
+            color: #0071e3;
+            font-weight: 600;
+        }
+
+        .info-box code {
+            background: rgba(0, 113, 227, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="logo">
-            <h1>🤖 CNS Skynet</h1>
-            <p>Script Toolbox</p>
+            <span class="logo-icon">🚀</span>
+            <h1>Skynet CNS Toolbox</h1>
+            <p>Network Configuration Suite</p>
         </div>
 
         {% if error %}
@@ -181,11 +213,11 @@
                 >
             </div>
 
-            <button type="submit">Login</button>
+            <button type="submit">Sign In</button>
         </form>
 
         <div class="info-box">
-            <strong>Demo Credentials:</strong><br>
+            <strong>Demo Credentials:</strong><br><br>
             Username: <code>cisco</code><br>
             Password: <code>cisco</code>
         </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNS Skynet - Dashboard</title>
+    <title>AI CNS Toolbox - Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         :root {
             --bg-primary: #f5f7fa;
-            --bg-secondary: #c3cfe2;
+            --bg-secondary: #c3cfe2; 
             --bg-card: white;
             --text-primary: #333;
             --text-secondary: #666;
@@ -37,11 +37,20 @@
             --navbar-shadow: rgba(0, 0, 0, 0.5);
             --accent-blue: #4a9eff;
             --accent-blue-light: #6bb3ff;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 100%), 
+                        url('{{ url_for("static", filename="4kdc.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%), 
+                        url('{{ url_for("static", filename="4kdc.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             min-height: 100vh;
             padding: 20px;
             color: var(--text-primary);
@@ -49,7 +58,7 @@
         }
 
         .navbar {
-            background: var(--navbar-bg);
+            background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 2px 10px var(--navbar-shadow);
             padding: 15px 30px;
             display: flex;
@@ -58,6 +67,7 @@
             margin-bottom: 30px;
             border-radius: 12px;
             transition: background 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .navbar-brand {
@@ -126,17 +136,25 @@
             margin: 0 auto;
         }
 
+        body.dark-mode .navbar {
+            background: rgba(36, 36, 36, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
         .header {
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.95);
             padding: 30px;
             border-radius: 12px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
             transition: background 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         body.dark-mode .header {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            background: rgba(45, 45, 45, 0.9);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
         }
 
         .header h1 {
@@ -158,17 +176,22 @@
         }
 
         .script-card {
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             cursor: pointer;
             border: 2px solid transparent;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         body.dark-mode .script-card {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            background: rgba(45, 45, 45, 0.9);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
         }
 
         .script-card:hover {
@@ -197,6 +220,7 @@
             font-size: 14px;
             line-height: 1.5;
             margin-bottom: 20px;
+            flex-grow: 1;
         }
 
         .run-btn {
@@ -209,6 +233,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s;
+            margin-top: auto;
         }
 
         .run-btn:hover {
@@ -249,7 +274,7 @@
         }
 
         .modal-content {
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.98);
             padding: 30px;
             border-radius: 12px;
             width: 90%;
@@ -257,6 +282,12 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             animation: slideUp 0.3s;
             transition: background 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode .modal-content {
+            background: rgba(45, 45, 45, 0.95);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
 
         @keyframes slideUp {
@@ -396,13 +427,19 @@
         }
 
         .loading-content {
-            background: var(--bg-card);
+            background: rgba(255, 255, 255, 0.98);
             padding: 40px;
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             animation: slideUp 0.3s;
             transition: background 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode .loading-content {
+            background: rgba(45, 45, 45, 0.95);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
         }
 
         .loading-spinner-large {
@@ -543,7 +580,7 @@
     <div class="container">
         <div class="header">
             <h1>Welcome to CNS Skynet 🚀</h1>
-            <p>Lab Script Toolbox - Select a script below to execute</p>
+            <p>This the Cisco CNS Skynet Lab Automation Toolbox. Version Beta 0.2. </p>
             <p style="margin-top: 10px; font-size: 12px; color: var(--text-light);">{{ current_time }}</p>
         </div>
 
@@ -648,7 +685,7 @@
     </div>
 
     <footer class="footer">
-        <p>CNS Skynet v1.0 | Lab Automation Toolbox</p>
+        <p>Cisco Highly Confidential</p>
     </footer>
 
     <script>
