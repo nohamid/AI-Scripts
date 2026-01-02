@@ -77,6 +77,5 @@ print(output)
 # Copy Configuration automatically to clipboard
 try:
     pyperclip.copy(output)
-    print("✅ Configuration copied to clipboard!")
-except Exception as e:
-    print("⚠️  Could not copy to clipboard (clipboard not available on this system)")
+except Exception:
+    pass  # Silently fail if clipboard is not available
