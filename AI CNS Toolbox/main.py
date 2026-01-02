@@ -22,7 +22,7 @@ AVAILABLE_SCRIPTS = {
     'config_backup': {
         'name': 'Configuration Backup',
         'description': 'Backup device configuration to Everlast and copy to clipboard',
-        'icon': '💾'
+        'icon': '🥊'
     },
     'device_inventory': {
         'name': 'Device Inventory',
