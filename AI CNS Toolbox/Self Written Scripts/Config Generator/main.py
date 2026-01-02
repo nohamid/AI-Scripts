@@ -50,6 +50,7 @@ output = (
     f"exit\n"
     f"exit\n"
     f"interface {interface}\n"
+    f"vrf forwarding Mgmt-vrf\n"
     f"IP address {ip_only} {mask_only}\n"
     f"no shut\n"
     f"cdp enable\n"
