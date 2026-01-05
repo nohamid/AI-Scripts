@@ -7,14 +7,19 @@ import io
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
+import logging
 from ftp_backup_module import backup_device_config
+logging.basicConfig(level=logging.INFO)
 
 # Add the Self Written Scripts folder to path
 config_gen_script_path = Path(__file__).parent / 'Self Written Scripts' / 'Config Generator' / 'main.py'
-cns_healthcheck_script_path = Path(__file__).parent / 'Self Written Scripts' / 'CNS-Healthcheck'
+cns_healthcheck_script_path = Path(__file__).parent / 'Self Written Scripts' / 'CNS_Healthcheck'
 
 # Add CNS Health Check to path for imports
 sys.path.insert(0, str(cns_healthcheck_script_path))
+
+# Import the healthcheck function
+from healtcheck import run_cns_healthcheck
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'your-secret-key-change-this'
@@ -230,9 +235,7 @@ with patch('builtins.input', side_effect=inputs):
     
     # Handle CNS Health Check
     if script_id == 'cns_healthcheck':
-        try:
-            from main import run_cns_healthcheck
-            
+        try:            
             # Get IP range from request
             data = request.get_json() or {}
             ip_range = data.get('ip_range')
@@ -361,4 +364,4 @@ if __name__ == '__main__':
     
     # Run the Flask app
     # Set debug=False in production
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=False, host='0.0.0.0', port=8080)
