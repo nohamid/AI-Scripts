@@ -1113,6 +1113,7 @@
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 100px;">Hostname</th>`;
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 80px;">Platform</th>`;
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 80px;">Version</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 100px;">Mgmt Interface</th>`;
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 120px;">Mgmt IP</th>`;
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: center; min-width: 50px;">Status</th>`;
                 detailsHtml += `</tr>`;
@@ -1127,6 +1128,7 @@
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.hostname}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.platform}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.version}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.mgmt_interface}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.mgmt_ip}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); text-align: center; ${statusColor}; font-weight: bold;">${statusIcon}</td>`;
                     detailsHtml += `</tr>`;
