@@ -193,10 +193,7 @@ if __name__ == '__main__':
     
     for device in result['data']:
         status_icon = "✓" if device['status'] == 'success' else "✗"
-        if device['status'] == 'error':
-            print(f"{status_icon} {device['ip']} | ERROR: {device.get('error', 'Unknown error')}")
-        else:
-            print(f"{status_icon} {device['ip']} | {device['hostname']} | {device['platform']} | {device['version']} | {device['mgmt_ip']}")
+        print(f"{status_icon} {device['ip']} | {device['hostname']} | {device['platform']} | {device['version']} | {device['mgmt_ip']}")
     
     print(f"\nResults saved to: {result['csv_path']}")
         
