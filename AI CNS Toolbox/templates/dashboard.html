@@ -687,9 +687,14 @@
             <div class="resource-card">
                 <div class="resource-title">⚡ Raritan Documentation</div>
                 <div class="resource-description">RARITAN Smart PDU documentation.</div>
-                <a href="https://cisco.sharepoint.com/sites/FKF3-CX-CNS-Lab/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling%2FRARITAN%2DSMARTPDUs%2D15%5FDec%5F23%2Etxt&parent=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling" target="_blank" class="resource-link">
-                    🔗 View Documentation
-                </a>
+                <div style="display: flex; gap: 10px; flex-direction: column;">
+                    <a href="https://cisco.sharepoint.com/sites/FKF3-CX-CNS-Lab/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling%2FRARITAN%2DSMARTPDUs%2D15%5FDec%5F23%2Etxt&parent=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling" target="_blank" class="resource-link" style="text-align: center;">
+                        🔗 View Documentation
+                    </a>
+                    <a href="{{ url_for('pdu_management') }}" class="resource-link" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); text-align: center;">
+                        🔌 Open Power Supply
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -763,6 +768,33 @@
         </div>
     </div>
 
+    <!-- CNS Health Check Modal -->
+    <div id="cnsHealthcheckModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="cnsHealthcheckModalTitle">CNS Health Check</h2>
+                <button class="close-btn" onclick="closeCnsHealthcheckModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 15px;">Enter the IP address range to scan for devices:</p>
+                <div class="device-input-form">
+                    <div>
+                        <label style="color: var(--text-primary); font-weight: 500; margin-bottom: 5px; display: block;">IP Range</label>
+                        <input 
+                            type="text" 
+                            id="ipRangeInput" 
+                            placeholder="e.g., 10.10.10.1 - 10.10.10.254"
+                        >
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeCnsHealthcheckModal()">Cancel</button>
+                <button class="backup-btn" onclick="submitCnsHealthcheck()">Start Health Check</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
         <div class="modal-content">
@@ -825,6 +857,12 @@
             // Special handling for Configuration Backup
             if (scriptId === 'config_backup') {
                 showDeviceInputModal(scriptId, scriptName);
+                return;
+            }
+            
+            // Special handling for CNS Health Check
+            if (scriptId === 'cns_healthcheck') {
+                showCnsHealthcheckModal(scriptId, scriptName);
                 return;
             }
 
@@ -964,6 +1002,57 @@
             });
         }
 
+        function showCnsHealthcheckModal(scriptId, scriptName) {
+            document.getElementById('cnsHealthcheckModalTitle').textContent = scriptName;
+            document.getElementById('cnsHealthcheckModal').classList.add('show');
+            document.getElementById('ipRangeInput').focus();
+        }
+
+        function closeCnsHealthcheckModal() {
+            document.getElementById('cnsHealthcheckModal').classList.remove('show');
+            document.getElementById('ipRangeInput').value = '';
+        }
+
+        function submitCnsHealthcheck() {
+            const ipRange = document.getElementById('ipRangeInput').value.trim();
+            
+            if (!ipRange) {
+                alert('Please enter an IP range (e.g., 10.10.10.1 - 10.10.10.254)');
+                return;
+            }
+
+            closeCnsHealthcheckModal();
+            
+            const submitBtn = event.target;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<span class="loading-spinner"></span>Checking...';
+            showLoadingOverlay();
+
+            fetch(`{{ url_for('run_script', script_id='cns_healthcheck') }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ip_range: ipRange })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoadingOverlay();
+                showResultModal(data, 'CNS Health Check');
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = 'Start Health Check';
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                showResultModal({
+                    status: 'error',
+                    message: 'An error occurred while executing the health check: ' + error.message
+                }, 'CNS Health Check');
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = 'Start Health Check';
+            });
+        }
+
         function showResultModal(data, scriptName) {
             document.getElementById('modalTitle').textContent = scriptName;
             
@@ -1010,6 +1099,44 @@
                 detailsHtml += `<button class="copy-btn" onclick="copyToClipboard('backupSummaryText')">📋 Copy to Clipboard</button>`;
             }
             
+            // For CNS Health Check, display device table
+            if (data.total_devices !== undefined && data.data) {
+                detailsHtml += `<br><strong style="color: var(--accent-blue);">Health Check Results (${data.total_devices} devices scanned):</strong><br>`;
+                detailsHtml += `<div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 5px;">`;
+                detailsHtml += `<table style="width: 100%; border-collapse: collapse; font-size: 11px;">`;
+                detailsHtml += `<thead style="background: var(--accent-blue); color: white; position: sticky; top: 0;">`;
+                detailsHtml += `<tr>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">IP</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Hostname</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Platform</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Version</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Mgmt IP</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: center;">Status</th>`;
+                detailsHtml += `</tr>`;
+                detailsHtml += `</thead>`;
+                detailsHtml += `<tbody>`;
+                
+                data.data.forEach(device => {
+                    const statusIcon = device.status === 'success' ? '✓' : '✗';
+                    const statusColor = device.status === 'success' ? 'color: #28a745;' : 'color: #dc3545;';
+                    detailsHtml += `<tr style="border-bottom: 1px solid var(--border-color);">`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.ip}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.hostname}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.platform}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.version}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.mgmt_ip}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); text-align: center; ${statusColor}">${statusIcon}</td>`;
+                    detailsHtml += `</tr>`;
+                });
+                
+                detailsHtml += `</tbody>`;
+                detailsHtml += `</table>`;
+                detailsHtml += `</div>`;
+                
+                // Add download CSV button
+                detailsHtml += `<button class="copy-btn" style="background: #007bff; margin-top: 15px;" onclick="downloadHealthCheckCSV(${JSON.stringify(data.data).replace(/"/g, '&quot;')})">📥 Download as CSV</button>`;
+            }
+            
             if (data.timestamp) {
                 detailsHtml += `<br><br>Executed at: ${new Date(data.timestamp).toLocaleString()}`;
             }
@@ -1020,6 +1147,38 @@
 
         function closeModal() {
             document.getElementById('resultModal').classList.remove('show');
+        }
+
+        function downloadHealthCheckCSV(devices) {
+            // Send device data to backend for CSV generation
+            fetch('{{ url_for("download_health_check_csv") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ devices: devices })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to download CSV');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create a temporary URL for the blob
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `CNS_HealthCheck_${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Error downloading CSV:', error);
+                alert('Failed to download CSV file. Please try again.');
+            });
         }
 
         function copyToClipboard(textareaId = 'configText') {
@@ -1069,6 +1228,12 @@
             }
         });
 
+        document.getElementById('cnsHealthcheckModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCnsHealthcheckModal();
+            }
+        });
+
         // Allow Enter key to submit inputs
         document.getElementById('deviceIpInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -1079,6 +1244,12 @@
         document.getElementById('ipInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 submitConfigGenerator();
+            }
+        });
+
+        document.getElementById('ipRangeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitCnsHealthcheck();
             }
         });
     </script>

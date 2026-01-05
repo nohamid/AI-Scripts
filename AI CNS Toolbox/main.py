@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
 import os
 import sys
 import subprocess
+import csv
+import io
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
@@ -9,6 +11,10 @@ from ftp_backup_module import backup_device_config
 
 # Add the Self Written Scripts folder to path
 config_gen_script_path = Path(__file__).parent / 'Self Written Scripts' / 'Config Generator' / 'main.py'
+cns_healthcheck_script_path = Path(__file__).parent / 'Self Written Scripts' / 'CNS-Healthcheck'
+
+# Add CNS Health Check to path for imports
+sys.path.insert(0, str(cns_healthcheck_script_path))
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'your-secret-key-change-this'
@@ -29,24 +35,29 @@ AVAILABLE_SCRIPTS = {
         'description': 'Backup device configuration to Everlast and copy to clipboard',
         'icon': '🥊'
     },
+    'cns_healthcheck': {
+        'name': 'CNS Health Check',
+        'description': 'Run health check on a range of Cisco CNS Lab devices',
+        'icon': '🏥'
+    },
     'device_inventory': {
         'name': 'Device Inventory',
-        'description': 'Retrieve and display device inventory information',
+        'description': 'This script has no function yet, we are working on it',
         'icon': '📦'
     },
     'performance_report': {
         'name': 'Performance Report',
-        'description': 'Generate performance analytics and reports',
+        'description': 'This script has no function yet, we are working on it',
         'icon': '📊'
     },
     'security_audit': {
         'name': 'Security Audit',
-        'description': 'Run security checks and vulnerability scans',
+        'description': 'This script has no function yet, we are working on it',
         'icon': '🔒'
     },
     'log_analysis': {
         'name': 'Log Analysis',
-        'description': 'Analyze system and application logs',
+        'description': 'This script has no function yet, we are working on it',
         'icon': '📝'
     }
 }
@@ -86,6 +97,11 @@ def dashboard():
                          scripts=AVAILABLE_SCRIPTS,
                          username=session.get('user'),
                          current_time=datetime.now().strftime('%B %d, %Y'))
+
+@app.route('/pdu-management')
+@login_required
+def pdu_management():
+    return render_template('pdu_management.html')
 
 @app.route('/run-script/<script_id>', methods=['POST'])
 @login_required
@@ -212,6 +228,51 @@ with patch('builtins.input', side_effect=inputs):
                 'timestamp': datetime.now().isoformat()
             }), 500
     
+    # Handle CNS Health Check
+    if script_id == 'cns_healthcheck':
+        try:
+            from main import run_cns_healthcheck
+            
+            # Get IP range from request
+            data = request.get_json() or {}
+            ip_range = data.get('ip_range')
+            
+            if not ip_range:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'IP range is required (format: 10.10.10.1 - 10.10.10.254)',
+                    'timestamp': datetime.now().isoformat()
+                }), 400
+            
+            # Run the health check
+            result = run_cns_healthcheck(ip_range)
+            
+            if result['status'] == 'success':
+                return jsonify({
+                    'status': 'success',
+                    'script': script_name,
+                    'message': result['message'],
+                    'data': result['data'],
+                    'total_devices': result['total_devices'],
+                    'success_count': result['success_count'],
+                    'error_count': result['error_count'],
+                    'timestamp': datetime.now().isoformat()
+                })
+            else:
+                return jsonify({
+                    'status': 'error',
+                    'script': script_name,
+                    'message': result['message'],
+                    'timestamp': datetime.now().isoformat()
+                }), 400
+        
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': f'Health check failed: {str(e)}',
+                'timestamp': datetime.now().isoformat()
+            }), 500
+    
     # Default placeholder for other scripts
     result = {
         'status': 'success',
@@ -226,6 +287,65 @@ with patch('builtins.input', side_effect=inputs):
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/download-health-check-csv', methods=['POST'])
+@login_required
+def download_health_check_csv():
+    """Generate and download CNS Health Check results as CSV"""
+    try:
+        data = request.get_json() or {}
+        devices = data.get('devices', [])
+        
+        if not devices:
+            return jsonify({
+                'status': 'error',
+                'message': 'No device data provided'
+            }), 400
+        
+        # Create CSV in memory
+        output = io.StringIO()
+        
+        # Define CSV columns
+        fieldnames = ['IP Address', 'Hostname', 'Platform', 'Version', 'Serial Number', 
+                      'Management Interface', 'Management IP', 'Uptime', 'Status']
+        
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        
+        # Write device data
+        for device in devices:
+            writer.writerow({
+                'IP Address': device.get('ip', 'N/A'),
+                'Hostname': device.get('hostname', 'N/A'),
+                'Platform': device.get('platform', 'N/A'),
+                'Version': device.get('version', 'N/A'),
+                'Serial Number': device.get('serial', 'N/A'),
+                'Management Interface': device.get('mgmt_interface', 'N/A'),
+                'Management IP': device.get('mgmt_ip', 'N/A'),
+                'Uptime': device.get('uptime', 'N/A'),
+                'Status': device.get('status', 'N/A')
+            })
+        
+        # Create BytesIO object from string
+        output.seek(0)
+        csv_bytes = io.BytesIO(output.getvalue().encode('utf-8'))
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'CNS_HealthCheck_{timestamp}.csv'
+        
+        return send_file(
+            csv_bytes,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=filename
+        )
+    
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Failed to generate CSV: {str(e)}'
+        }), 500
 
 @app.errorhandler(404)
 def not_found(error):
