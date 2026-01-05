@@ -776,14 +776,14 @@
                 <button class="close-btn" onclick="closeCnsHealthcheckModal()">×</button>
             </div>
             <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 15px;">Enter the IP address range to scan for devices:</p>
+                <p style="color: var(--text-secondary); margin-bottom: 15px;">Enter a single IP address or IP range to scan for devices:</p>
                 <div class="device-input-form">
                     <div>
-                        <label style="color: var(--text-primary); font-weight: 500; margin-bottom: 5px; display: block;">IP Range</label>
+                        <label style="color: var(--text-primary); font-weight: 500; margin-bottom: 5px; display: block;">IP Address or Range</label>
                         <input 
                             type="text" 
                             id="ipRangeInput" 
-                            placeholder="e.g., 10.10.10.1 - 10.10.10.254"
+                            placeholder="e.g., 10.10.10.1 or 10.10.10.1 - 10.10.10.254"
                         >
                     </div>
                 </div>
@@ -1017,7 +1017,7 @@
             const ipRange = document.getElementById('ipRangeInput').value.trim();
             
             if (!ipRange) {
-                alert('Please enter an IP range (e.g., 10.10.10.1 - 10.10.10.254)');
+                alert('Please enter an IP address or range (e.g., 10.10.10.1 or 10.10.10.1 - 10.10.10.254)');
                 return;
             }
 
