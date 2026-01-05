@@ -1,8 +1,0 @@
-Flask==2.3.3
-Werkzeug==2.3.7
-netmiko==4.3.0
-icmplib==3.0.3
-pyperclip==1.8.2
-genie==23.8
-pyats==23.8
-pandas
