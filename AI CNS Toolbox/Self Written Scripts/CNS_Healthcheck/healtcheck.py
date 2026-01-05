@@ -156,7 +156,7 @@ def run_cns_healthcheck(ip_range, username="admin", password="m1amivice19!"):
         df = pd.DataFrame(csvdata)
         df.to_csv(csv_path, index=False)
     
-    return {
+    result = {
         'status': 'success',
         'message': f'Health check completed. {success_count} devices reachable, {error_count} devices failed.',
         'data': device_results,
@@ -165,6 +165,13 @@ def run_cns_healthcheck(ip_range, username="admin", password="m1amivice19!"):
         'success_count': success_count,
         'error_count': error_count
     }
+    
+    # Debug: Print results
+    print(f"\nDEBUG: Returning {len(device_results)} devices")
+    for device in device_results:
+        print(f"Device {device['ip']}: status={device['status']}, error={device.get('error', 'None')}")
+    
+    return result
 
 # Interactive mode (for standalone script execution)
 if __name__ == '__main__':

@@ -1,3 +1,3 @@
 ip_address,hostname,platform,version,serial,mgmt_interface,mgmt_ip,uptime
-10.49.214.208,Katar,C9800-L-F-K9,17.12.3,FCL273400E4,GigabitEthernet0,10.49.214.208,"23 weeks, 6 days, 15 hours, 53 minutes"
-10.49.214.209,Thalium,C8300-1N1S-6T,17.18.1a,FDO2724M10H,GigabitEthernet0/0/0,10.49.214.209,"11 weeks, 6 days, 59 minutes"
+10.49.214.208,Katar,C9800-L-F-K9,17.12.3,FCL273400E4,GigabitEthernet0,10.49.214.208,"23 weeks, 6 days, 16 hours, 8 minutes"
+10.49.214.209,Thalium,C8300-1N1S-6T,17.18.1a,FDO2724M10H,GigabitEthernet0/0/0,10.49.214.209,"11 weeks, 6 days, 1 hour, 14 minutes"
