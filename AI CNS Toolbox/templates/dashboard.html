@@ -1111,6 +1111,7 @@
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Platform</th>`;
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Version</th>`;
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Mgmt IP</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Details</th>`;
                 detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: center;">Status</th>`;
                 detailsHtml += `</tr>`;
                 detailsHtml += `</thead>`;
@@ -1119,12 +1120,14 @@
                 data.data.forEach(device => {
                     const statusIcon = device.status === 'success' ? '✓' : '✗';
                     const statusColor = device.status === 'success' ? 'color: #28a745;' : 'color: #dc3545;';
+                    const details = device.status === 'error' ? `<span style="color: #dc3545; font-size: 10px;">${device.error || 'Connection failed'}</span>` : '';
                     detailsHtml += `<tr style="border-bottom: 1px solid var(--border-color);">`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.ip}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.hostname}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.platform}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.version}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.mgmt_ip}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); word-break: break-word; max-width: 250px;">${details}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); text-align: center; ${statusColor}">${statusIcon}</td>`;
                     detailsHtml += `</tr>`;
                 });
