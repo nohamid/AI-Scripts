@@ -1101,34 +1101,38 @@
             
             // For CNS Health Check, display device table
             if (data.total_devices !== undefined && data.data) {
-                detailsHtml += `<br><strong style="color: var(--accent-blue);">Health Check Results (${data.total_devices} devices scanned):</strong><br>`;
-                detailsHtml += `<div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 5px;">`;
-                detailsHtml += `<table style="width: 100%; border-collapse: collapse; font-size: 11px;">`;
+                console.log('Health check data:', data);
+                console.log('Devices:', data.data);
+                
+                detailsHtml += `<br><strong style="color: var(--accent-blue);">Health Check Results (${data.total_devices} devices scanned) - Success: ${data.success_count}, Failed: ${data.error_count}</strong><br>`;
+                detailsHtml += `<div style="max-height: 600px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 5px;">`;
+                detailsHtml += `<table style="width: 100%; border-collapse: collapse; font-size: 12px;">`;
                 detailsHtml += `<thead style="background: var(--accent-blue); color: white; position: sticky; top: 0;">`;
                 detailsHtml += `<tr>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">IP</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Hostname</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Platform</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Version</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Mgmt IP</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left;">Details</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: center;">Status</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 120px;">IP</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 100px;">Hostname</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 80px;">Platform</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 80px;">Version</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 120px;">Mgmt IP</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 200px;">Error Details</th>`;
+                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: center; min-width: 50px;">Status</th>`;
                 detailsHtml += `</tr>`;
                 detailsHtml += `</thead>`;
                 detailsHtml += `<tbody>`;
                 
-                data.data.forEach(device => {
+                data.data.forEach((device, index) => {
                     const statusIcon = device.status === 'success' ? '✓' : '✗';
                     const statusColor = device.status === 'success' ? 'color: #28a745;' : 'color: #dc3545;';
-                    const details = device.status === 'error' ? `<span style="color: #dc3545; font-size: 10px;">${device.error || 'Connection failed'}</span>` : '';
-                    detailsHtml += `<tr style="border-bottom: 1px solid var(--border-color);">`;
+                    const errorMsg = device.error ? String(device.error).substring(0, 200) : (device.status === 'error' ? 'Connection failed' : '');
+                    console.log(`Device ${index}:`, device, `Error: ${errorMsg}`);
+                    detailsHtml += `<tr style="border-bottom: 1px solid var(--border-color); background: ${device.status === 'error' ? 'rgba(220, 53, 69, 0.05)' : 'transparent'};">`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.ip}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.hostname}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.platform}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.version}</td>`;
                     detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.mgmt_ip}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); word-break: break-word; max-width: 250px;">${details}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); text-align: center; ${statusColor}">${statusIcon}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); word-break: break-word; font-family: monospace; font-size: 11px; color: ${device.status === 'error' ? '#dc3545' : '#666'};">${errorMsg}</td>`;
+                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); text-align: center; ${statusColor}; font-weight: bold;">${statusIcon}</td>`;
                     detailsHtml += `</tr>`;
                 });
                 

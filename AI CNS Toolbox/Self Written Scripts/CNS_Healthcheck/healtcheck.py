@@ -129,6 +129,8 @@ def run_cns_healthcheck(ip_range, username="admin", password="m1amivice19!"):
 
         except Exception as e:
             error_count += 1
+            error_msg = str(e)
+            print(f"ERROR for {ip}: {error_msg}")
             device_result = {
                 "ip": ip,
                 "hostname": "N/A",
@@ -140,7 +142,7 @@ def run_cns_healthcheck(ip_range, username="admin", password="m1amivice19!"):
                 "mgmt_ip": "N/A",
                 "mgmt_status": "N/A",
                 "status": "error",
-                "error": str(e)
+                "error": error_msg
             }
             device_results.append(device_result)
         
