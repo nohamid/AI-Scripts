@@ -6,28 +6,44 @@ import os
 # Check the Syntax of the input:
 def is_valid_ip_range(IP_Range):
     parts = IP_Range.split('-')
-    if len(parts) != 2:
+    
+    # Handle single IP address
+    if len(parts) == 1:
+        try:
+            ipaddress.IPv4Address(parts[0].strip())
+            return True
+        except ValueError:
             return False
     
-    start_ip_str = parts[0].strip()
-    end_ip_str = parts[1].strip()
+    # Handle IP range
+    elif len(parts) == 2:
+        start_ip_str = parts[0].strip()
+        end_ip_str = parts[1].strip()
 
-    try:
-        # 2. Validate syntax and values using the ipaddress module
-        start_ip = ipaddress.IPv4Address(start_ip_str)
-        end_ip = ipaddress.IPv4Address(end_ip_str)
-        #return start_ip <= end_ip
-        return True 
-    
-    except ValueError:
+        try:
+            # Validate syntax and values using the ipaddress module
+            start_ip = ipaddress.IPv4Address(start_ip_str)
+            end_ip = ipaddress.IPv4Address(end_ip_str)
+            return True 
+        
+        except ValueError:
             # This triggers if an IP is malformed (e.g., 10.10.10.300)
             return False
+    
+    else:
+        return False
 
 
 
 def get_ip_list(IP_Range):
-    """Converts '10.10.10.1 - 10.10.10.3' into ['10.10.10.1', '10.10.10.2', '10.10.10.3']"""
+    """Converts '10.10.10.1 - 10.10.10.3' into ['10.10.10.1', '10.10.10.2', '10.10.10.3'] or '10.10.10.1' into ['10.10.10.1']"""
     parts = IP_Range.split('-')
+    
+    # Handle single IP address
+    if len(parts) == 1:
+        return [parts[0].strip()]
+    
+    # Handle IP range
     start_ip = ipaddress.IPv4Address(parts[0].strip())
     end_ip = ipaddress.IPv4Address(parts[1].strip())
     
