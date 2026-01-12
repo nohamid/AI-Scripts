@@ -47,7 +47,7 @@ AVAILABLE_SCRIPTS = {
     },
     'device_inventory': {
         'name': 'Device Inventory',
-        'description': 'This script has no function yet, we are working on it',
+        'description': 'Does it makes sende to write a script to reset a Cisco device and prepare it for storage?',
         'icon': '📦'
     },
     'performance_report': {
