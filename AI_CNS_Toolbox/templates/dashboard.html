@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CNS Skynet Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,233 +14,372 @@
         }
 
         :root {
-            --bg-primary: #f5f7fa;
-            --bg-secondary: #c3cfe2; 
-            --bg-card: white;
-            --text-primary: #333;
-            --text-secondary: #666;
-            --text-light: #999;
-            --border-color: #e0e0e0;
-            --navbar-bg: white;
-            --navbar-shadow: rgba(0, 0, 0, 0.1);
-            --accent-blue: #1e3c72;
-            --accent-blue-light: #2a5298;
+            /* Material Design 3 Color Tokens */
+            --md-primary: #1a73e8;
+            --md-primary-container: #d3e3fd;
+            --md-on-primary: #ffffff;
+            --md-on-primary-container: #041e49;
+            --md-secondary: #5f6368;
+            --md-secondary-container: #e8eaed;
+            --md-surface: #ffffff;
+            --md-surface-dim: #f8f9fa;
+            --md-surface-container: #f1f3f4;
+            --md-surface-container-high: #e8eaed;
+            --md-on-surface: #1f1f1f;
+            --md-on-surface-variant: #5f6368;
+            --md-outline: #dadce0;
+            --md-outline-variant: #c4c7c5;
+            --md-error: #d93025;
+            --md-error-container: #f9dedc;
+            --md-success: #1e8e3e;
+            --md-success-container: #ceead6;
+            --md-warning: #f9ab00;
+            
+            /* Elevation Shadows */
+            --md-elevation-1: 0 1px 2px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
+            --md-elevation-2: 0 1px 2px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.1);
+            --md-elevation-3: 0 1px 3px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.12);
+            --md-elevation-4: 0 2px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.14);
+            --md-elevation-5: 0 4px 8px rgba(0,0,0,0.12), 0 12px 24px rgba(0,0,0,0.16);
+            
+            /* Sizing */
+            --navbar-height: 64px;
+            --sidebar-width: 280px;
+            --content-max-width: 1400px;
+            --border-radius-sm: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 24px;
         }
 
+        /* Dark Mode */
         body.dark-mode {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --bg-card: #2d2d2d;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --text-light: #808080;
-            --border-color: #404040;
-            --navbar-bg: #242424;
-            --navbar-shadow: rgba(0, 0, 0, 0.5);
-            --accent-blue: #4a9eff;
-            --accent-blue-light: #6bb3ff;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 100%), 
-                        url('{{ url_for("static", filename="4kdc.jpg") }}');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            --md-primary: #8ab4f8;
+            --md-primary-container: #004a77;
+            --md-on-primary: #003258;
+            --md-on-primary-container: #d3e3fd;
+            --md-secondary: #9aa0a6;
+            --md-secondary-container: #3c4043;
+            --md-surface: #1f1f1f;
+            --md-surface-dim: #131314;
+            --md-surface-container: #2d2e30;
+            --md-surface-container-high: #3c4043;
+            --md-on-surface: #e3e3e3;
+            --md-on-surface-variant: #9aa0a6;
+            --md-outline: #5f6368;
+            --md-outline-variant: #444746;
+            --md-error: #f28b82;
+            --md-error-container: #8c1d18;
+            --md-success: #81c995;
+            --md-success-container: #0d652d;
+            
+            --md-elevation-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.4);
+            --md-elevation-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.4);
+            --md-elevation-3: 0 1px 3px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.4);
+            --md-elevation-4: 0 2px 4px rgba(0,0,0,0.3), 0 8px 16px rgba(0,0,0,0.4);
+            --md-elevation-5: 0 4px 8px rgba(0,0,0,0.3), 0 12px 24px rgba(0,0,0,0.5);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%), 
-                        url('{{ url_for("static", filename="4kdc.jpg") }}');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--md-surface-dim);
             min-height: 100vh;
-            padding: 20px;
-            color: var(--text-primary);
-            transition: background 0.3s ease, color 0.3s ease;
+            color: var(--md-on-surface);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            line-height: 1.5;
         }
 
+        /* Top Navigation Bar */
         .navbar {
-            background: rgba(255, 255, 255, 0.98);
-            box-shadow: 0 2px 10px var(--navbar-shadow);
-            padding: 15px 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height);
+            background: var(--md-surface);
+            border-bottom: 1px solid var(--md-outline);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            border-radius: 12px;
-            transition: background 0.3s ease, box-shadow 0.3s ease;
-            backdrop-filter: blur(10px);
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+            box-shadow: var(--md-elevation-1);
         }
 
         .navbar-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--accent-blue);
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--md-on-surface);
+            text-decoration: none;
         }
 
-        .navbar-right {
+        .navbar-brand .material-icons-round {
+            font-size: 32px;
+            color: var(--md-primary);
+        }
+
+        .navbar-brand span {
+            background: linear-gradient(135deg, var(--md-primary), #4285f4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-actions {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
         }
 
-        .user-info {
+        .nav-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--md-surface-container);
+            border-radius: 20px;
             font-size: 14px;
-            color: var(--text-secondary);
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
         }
 
-        .user-info strong {
-            color: var(--accent-blue);
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--md-surface-container-high);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
         }
 
         .logout-btn {
-            padding: 8px 16px;
-            background: #ff6b6b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--md-error);
             color: white;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-radius: 20px;
             font-size: 14px;
-            transition: background 0.3s;
+            font-weight: 500;
+            cursor: pointer;
             text-decoration: none;
-            display: inline-block;
+            transition: all 0.2s ease;
+            box-shadow: var(--md-elevation-1);
         }
 
         .logout-btn:hover {
-            background: #ff5252;
+            box-shadow: var(--md-elevation-2);
+            filter: brightness(1.1);
         }
 
-        .dark-mode-toggle {
-            padding: 8px 16px;
-            background: var(--accent-blue);
+        /* Main Content Area */
+        .main-content {
+            margin-top: var(--navbar-height);
+            padding: 32px;
+            max-width: var(--content-max-width);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--md-primary) 0%, #4285f4 50%, #34a853 100%);
+            border-radius: var(--border-radius-xl);
+            padding: 48px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--md-elevation-4);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 36px;
+            font-weight: 700;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .hero-title .material-icons-round {
+            font-size: 44px;
+        }
+
+        .hero-subtitle {
             font-size: 16px;
-            transition: all 0.3s;
-            display: inline-flex;
+            color: rgba(255,255,255,0.9);
+            max-width: 600px;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .meta-chip {
+            display: flex;
             align-items: center;
             gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .section-header h2 {
+            font-size: 22px;
             font-weight: 600;
+            color: var(--md-on-surface);
         }
 
-        .dark-mode-toggle:hover {
-            background: var(--accent-blue-light);
-            transform: scale(1.05);
+        .section-header .material-icons-round {
+            font-size: 28px;
+            color: var(--md-primary);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        body.dark-mode .navbar {
-            background: rgba(36, 36, 36, 0.95);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            transition: background 0.3s ease, box-shadow 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        body.dark-mode .header {
-            background: rgba(45, 45, 45, 0.9);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-        }
-
-        .header h1 {
-            color: var(--accent-blue);
-            margin-bottom: 10px;
-            font-size: 32px;
-        }
-
-        .header p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
+        /* Script Cards Grid */
         .scripts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
         }
 
         .script-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid transparent;
-            backdrop-filter: blur(10px);
+            background: var(--md-surface);
+            border-radius: var(--border-radius-lg);
+            padding: 24px;
+            box-shadow: var(--md-elevation-1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--md-outline);
             display: flex;
             flex-direction: column;
-            height: 100%;
+            position: relative;
+            overflow: hidden;
         }
 
-        body.dark-mode .script-card {
-            background: rgba(45, 45, 45, 0.9);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+        .script-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--md-primary), #4285f4);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
         }
 
         .script-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(42, 82, 152, 0.2);
-            border-color: var(--accent-blue);
+            box-shadow: var(--md-elevation-4);
+            transform: translateY(-4px);
+            border-color: var(--md-primary);
         }
 
-        body.dark-mode .script-card:hover {
-            box-shadow: 0 12px 30px rgba(74, 158, 255, 0.3);
+        .script-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .script-icon-wrapper {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--border-radius-md);
+            background: var(--md-primary-container);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
         }
 
         .script-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
+            font-size: 32px;
         }
 
         .script-card h3 {
-            color: var(--accent-blue);
-            margin-bottom: 10px;
             font-size: 18px;
+            font-weight: 600;
+            color: var(--md-on-surface);
+            margin-bottom: 8px;
         }
 
         .script-card p {
-            color: var(--text-secondary);
             font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 20px;
+            color: var(--md-on-surface-variant);
+            line-height: 1.6;
+            margin-bottom: 24px;
             flex-grow: 1;
         }
 
         .run-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             width: 100%;
-            padding: 10px;
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-light) 100%);
-            color: white;
+            padding: 14px 24px;
+            background: var(--md-primary);
+            color: var(--md-on-primary);
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-radius: var(--border-radius-xl);
+            font-size: 14px;
             font-weight: 600;
-            transition: all 0.3s;
-            margin-top: auto;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--md-elevation-1);
         }
 
         .run-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.4);
+            box-shadow: var(--md-elevation-3);
+            filter: brightness(1.05);
         }
 
         .run-btn:active {
@@ -250,6 +391,95 @@
             pointer-events: none;
         }
 
+        .run-btn .material-icons-round {
+            font-size: 20px;
+        }
+
+        /* Resources Section */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .resource-card {
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline);
+            border-radius: var(--border-radius-lg);
+            padding: 24px;
+            transition: all 0.3s ease;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .resource-card:hover {
+            box-shadow: var(--md-elevation-3);
+            border-color: var(--md-primary);
+        }
+
+        .resource-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .resource-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--border-radius-md);
+            background: var(--md-secondary-container);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .resource-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--md-on-surface);
+        }
+
+        .resource-description {
+            font-size: 14px;
+            color: var(--md-on-surface-variant);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .resource-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .resource-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--md-primary);
+            color: var(--md-on-primary);
+            text-decoration: none;
+            border-radius: var(--border-radius-xl);
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .resource-link:hover {
+            box-shadow: var(--md-elevation-2);
+            filter: brightness(1.05);
+        }
+
+        .resource-link.secondary {
+            background: var(--md-warning);
+            color: #1f1f1f;
+        }
+
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -258,14 +488,16 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .modal.show {
             display: flex;
-            animation: fadeIn 0.3s;
+            animation: fadeIn 0.2s ease;
         }
 
         @keyframes fadeIn {
@@ -274,25 +506,24 @@
         }
 
         .modal-content {
-            background: rgba(255, 255, 255, 0.98);
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s;
-            transition: background 0.3s ease;
-            backdrop-filter: blur(10px);
+            background: var(--md-surface);
+            padding: 0;
+            border-radius: var(--border-radius-xl);
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: var(--md-elevation-5);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body.dark-mode .modal-content {
-            background: rgba(45, 45, 45, 0.95);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        .modal-content.large {
+            max-width: 900px;
         }
 
         @keyframes slideUp {
             from {
-                transform: translateY(30px);
+                transform: translateY(24px);
                 opacity: 0;
             }
             to {
@@ -305,109 +536,243 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--md-outline);
         }
 
         .modal-header h2 {
-            color: var(--accent-blue);
-            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--md-on-surface);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-header h2 .material-icons-round {
+            color: var(--md-primary);
         }
 
         .close-btn {
-            background: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             border: none;
-            font-size: 24px;
+            background: transparent;
+            color: var(--md-on-surface-variant);
             cursor: pointer;
-            color: var(--text-secondary);
-            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
         }
 
         .close-btn:hover {
-            color: var(--text-primary);
+            background: var(--md-surface-container-high);
         }
 
         .modal-body {
-            margin-bottom: 20px;
-        }
-
-        .result-message {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .result-success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-
-        body.dark-mode .result-success {
-            background: #1e4620;
-            border: 1px solid #2d5c2e;
-            color: #90ee90;
-        }
-
-        .result-error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        body.dark-mode .result-error {
-            background: #4a2424;
-            border: 1px solid #6a3434;
-            color: #ff9999;
+            padding: 24px;
+            overflow-y: auto;
+            max-height: calc(90vh - 160px);
         }
 
         .modal-footer {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: flex-end;
+            padding: 16px 24px;
+            border-top: 1px solid var(--md-outline);
+            background: var(--md-surface-container);
         }
 
-        .close-modal-btn {
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        .close-modal-btn:hover {
-            background: #5a6268;
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-on-surface);
+            margin-bottom: 8px;
         }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--accent-blue);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 10px;
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--md-outline);
+            border-radius: var(--border-radius-md);
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--md-surface);
+            color: var(--md-on-surface);
+            transition: all 0.2s ease;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--md-primary);
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
         }
 
-        .footer {
-            text-align: center;
-            color: var(--text-light);
+        .form-group input::placeholder {
+            color: var(--md-on-surface-variant);
+        }
+
+        .form-hint {
             font-size: 12px;
-            margin-top: 40px;
-            padding: 20px;
+            color: var(--md-on-surface-variant);
+            margin-top: 6px;
         }
 
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--border-radius-xl);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--md-primary);
+            color: var(--md-on-primary);
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--md-elevation-2);
+            filter: brightness(1.05);
+        }
+
+        .btn-secondary {
+            background: var(--md-surface-container-high);
+            color: var(--md-on-surface);
+        }
+
+        .btn-secondary:hover {
+            background: var(--md-outline);
+        }
+
+        .btn-success {
+            background: var(--md-success);
+            color: white;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .btn-success:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Result Messages */
+        .result-message {
+            padding: 16px 20px;
+            border-radius: var(--border-radius-md);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .result-success {
+            background: var(--md-success-container);
+            color: var(--md-success);
+        }
+
+        .result-error {
+            background: var(--md-error-container);
+            color: var(--md-error);
+        }
+
+        .result-message .material-icons-round {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        /* Data Tables */
+        .data-table-container {
+            border: 1px solid var(--md-outline);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            margin-top: 16px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table thead {
+            background: var(--md-primary);
+            color: white;
+        }
+
+        .data-table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--md-outline);
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--md-surface-container);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: var(--md-success-container);
+            color: var(--md-success);
+        }
+
+        .status-error {
+            background: var(--md-error-container);
+            color: var(--md-error);
+        }
+
+        /* Config Textarea */
+        .config-textarea {
+            width: 100%;
+            height: 250px;
+            padding: 16px;
+            border: 1px solid var(--md-outline);
+            border-radius: var(--border-radius-md);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            background: var(--md-surface-container);
+            color: var(--md-on-surface);
+            resize: vertical;
+        }
+
+        /* Loading Overlay */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -415,7 +780,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
             z-index: 2000;
             align-items: center;
             justify-content: center;
@@ -423,288 +789,228 @@
 
         .loading-overlay.show {
             display: flex;
-            animation: fadeIn 0.3s;
+            animation: fadeIn 0.2s;
         }
 
         .loading-content {
-            background: rgba(255, 255, 255, 0.98);
-            padding: 40px;
-            border-radius: 12px;
+            background: var(--md-surface);
+            padding: 48px;
+            border-radius: var(--border-radius-xl);
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s;
-            transition: background 0.3s ease;
-            backdrop-filter: blur(10px);
+            box-shadow: var(--md-elevation-5);
         }
 
-        body.dark-mode .loading-content {
-            background: rgba(45, 45, 45, 0.95);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-        }
-
-        .loading-spinner-large {
-            width: 50px;
-            height: 50px;
-            border: 5px solid var(--border-color);
-            border-top: 5px solid var(--accent-blue);
+        .loading-spinner {
+            width: 56px;
+            height: 56px;
+            border: 4px solid var(--md-outline);
+            border-top-color: var(--md-primary);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .loading-content h2 {
-            color: var(--accent-blue);
             font-size: 20px;
-            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--md-on-surface);
+            margin-bottom: 8px;
         }
 
         .loading-content p {
-            color: var(--text-secondary);
             font-size: 14px;
+            color: var(--md-on-surface-variant);
         }
 
-        .device-input-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 32px;
+            color: var(--md-on-surface-variant);
+            font-size: 13px;
+            border-top: 1px solid var(--md-outline);
+            background: var(--md-surface);
+            margin-top: 48px;
         }
 
-        .config-generator-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+            
+            .hero-section {
+                padding: 32px 24px;
+            }
+            
+            .hero-title {
+                font-size: 24px;
+            }
+            
+            .scripts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar {
+                padding: 0 16px;
+            }
+            
+            .nav-chip {
+                display: none;
+            }
         }
 
-        .device-input-form input,
-        .config-generator-form input {
-            padding: 12px;
-            border: 2px solid var(--border-color);
-            border-radius: 5px;
-            font-size: 14px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            transition: border-color 0.3s;
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
 
-        .device-input-form input:focus,
-        .config-generator-form input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+        ::-webkit-scrollbar-track {
+            background: var(--md-surface-container);
         }
 
-        .form-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
+        ::-webkit-scrollbar-thumb {
+            background: var(--md-outline);
+            border-radius: 4px;
         }
 
-        .backup-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-light) 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--md-on-surface-variant);
         }
 
-        .backup-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.4);
-        }
-
-        .backup-btn.loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        .cancel-btn {
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .cancel-btn:hover {
-            background: #5a6268;
-        }
-
+        /* Copy Button */
         .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             padding: 10px 20px;
-            background: #28a745;
+            background: var(--md-success);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius-xl);
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            margin-top: 10px;
+            transition: all 0.2s ease;
+            margin-top: 12px;
         }
 
         .copy-btn:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-
-        .copy-btn:active {
-            transform: translateY(0);
+            filter: brightness(1.1);
         }
 
         .copy-btn.copied {
-            background: #17a2b8;
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--accent-blue);
-            margin-top: 40px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--accent-blue);
-        }
-
-        .resources-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .resource-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .resource-card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            transform: translateY(-5px);
-            border-color: var(--accent-blue);
-        }
-
-        body.dark-mode .resource-card {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        body.dark-mode .resource-card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            border-color: var(--accent-blue);
-        }
-
-        .resource-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--accent-blue);
-            margin-bottom: 10px;
-        }
-
-        .resource-description {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-
-        .resource-link {
-            display: inline-block;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-light) 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .resource-link:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.3);
-        }
-
-        .resource-link:active {
-            transform: scale(0.95);
+            background: var(--md-primary);
         }
     </style>
 </head>
 <body>
+    <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="navbar-brand">
-            🤖 CNS Skynet
-        </div>
-        <div class="navbar-right">
-            <div class="user-info">
-                Logged in as: <strong>{{ username }}</strong>
+        <a href="#" class="navbar-brand">
+            <span class="material-icons-round">smart_toy</span>
+            <span>CNS Skynet</span>
+        </a>
+        <div class="navbar-actions">
+            <div class="nav-chip">
+                <span class="material-icons-round" style="font-size: 18px;">person</span>
+                {{ username }}
             </div>
-            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-                <span id="darkModeIcon">🌙</span>
+            <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Theme">
+                <span class="material-icons-round" id="darkModeIcon">dark_mode</span>
             </button>
-            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                <span class="material-icons-round" style="font-size: 18px;">logout</span>
+                Logout
+            </a>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="header">
-            <h1>Welcome to CNS Skynet 🚀</h1>
-            <p>This the Cisco CNS Skynet Lab Automation Toolbox. Version Beta 0.2. </p>
-            <p style="margin-top: 10px; font-size: 12px; color: var(--text-light);">{{ current_time }}</p>
-        </div>
-
-        <div class="scripts-grid">
-            {% for script_id, script_info in scripts.items() %}
-            <div class="script-card">
-                <div class="script-icon">{{ script_info.icon }}</div>
-                <h3>{{ script_info.name }}</h3>
-                <p>{{ script_info.description }}</p>
-                <button class="run-btn" onclick="runScript('{{ script_id }}', '{{ script_info.name }}')">
-                    Run Script
-                </button>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Automation Scripts Section -->
+        <section>
+            <div class="section-header">
+                <span class="material-icons-round">terminal</span>
+                <h2>Automation Scripts</h2>
             </div>
-            {% endfor %}
-        </div>
+            <div class="scripts-grid">
+                {% for script_id, script_info in scripts.items() %}
+                <div class="script-card">
+                    <div class="script-icon-wrapper">
+                        <span class="script-icon">{{ script_info.icon }}</span>
+                    </div>
+                    <h3>{{ script_info.name }}</h3>
+                    <p>{{ script_info.description }}</p>
+                    <button class="run-btn" onclick="runScript('{{ script_id }}', '{{ script_info.name }}')">
+                        <span class="material-icons-round">play_arrow</span>
+                        Run Script
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
 
         <!-- Lab Resources Section -->
-        <div class="section-title">📚 Lab Resources</div>
-        <div class="resources-container">
-            <div class="resource-card">
-                <div class="resource-title">📊 FKF3 IP DNS Configuration</div>
-                <div class="resource-description">IP and DNS assignment Excel Spreadsheet Sharepoint:</div>
-                <a href="https://cisco.sharepoint.com/:x:/r/sites/FKF3-CX-CNS-Lab/_layouts/15/Doc.aspx?sourcedoc=%7B9C1AE385-F24A-46B5-9009-12B49C378E79%7D&file=AS-LAB-FKF3-IP-DNS-v4.xlsx&action=default&mobileredirect=true" target="_blank" class="resource-link">
-                    🔗 Open Spreadsheet
-                </a>
+        <section>
+            <div class="section-header">
+                <span class="material-icons-round">library_books</span>
+                <h2>Lab Resources</h2>
             </div>
-            <div class="resource-card">
-                <div class="resource-title">⚡ Raritan Documentation</div>
-                <div class="resource-description">RARITAN Smart PDU documentation.</div>
-                <div style="display: flex; gap: 10px; flex-direction: column;">
-                    <a href="https://cisco.sharepoint.com/sites/FKF3-CX-CNS-Lab/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling%2FRARITAN%2DSMARTPDUs%2D15%5FDec%5F23%2Etxt&parent=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling" target="_blank" class="resource-link" style="text-align: center;">
-                        🔗 View Documentation
-                    </a>
-                    <a href="{{ url_for('pdu_management') }}" class="resource-link" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); text-align: center;">
-                        🔌 Open Power Supply
-                    </a>
+            <div class="resources-grid">
+                <div class="resource-card">
+                    <div class="resource-header">
+                        <div class="resource-icon-wrapper">📊</div>
+                        <div class="resource-title">FKF3 IP DNS Configuration</div>
+                    </div>
+                    <p class="resource-description">
+                        Access the IP and DNS assignment Excel Spreadsheet on SharePoint for lab infrastructure configuration.
+                    </p>
+                    <div class="resource-actions">
+                        <a href="https://cisco.sharepoint.com/:x:/r/sites/FKF3-CX-CNS-Lab/_layouts/15/Doc.aspx?sourcedoc=%7B9C1AE385-F24A-46B5-9009-12B49C378E79%7D&file=AS-LAB-FKF3-IP-DNS-v4.xlsx&action=default&mobileredirect=true" target="_blank" class="resource-link">
+                            <span class="material-icons-round" style="font-size: 18px;">open_in_new</span>
+                            Open Spreadsheet
+                        </a>
+                    </div>
+                </div>
+                <div class="resource-card">
+                    <div class="resource-header">
+                        <div class="resource-icon-wrapper">⚡</div>
+                        <div class="resource-title">Raritan PDU Management</div>
+                    </div>
+                    <p class="resource-description">
+                        RARITAN Smart PDU documentation and power management interface for lab equipment.
+                    </p>
+                    <div class="resource-actions">
+                        <a href="https://cisco.sharepoint.com/sites/FKF3-CX-CNS-Lab/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling%2FRARITAN%2DSMARTPDUs%2D15%5FDec%5F23%2Etxt&parent=%2Fsites%2FFKF3%2DCX%2DCNS%2DLab%2FShared%20Documents%2FAdmin%20Documents%2FPower%20%26%20Cooling" target="_blank" class="resource-link">
+                            <span class="material-icons-round" style="font-size: 18px;">description</span>
+                            Documentation
+                        </a>
+                        <a href="{{ url_for('pdu_management') }}" class="resource-link secondary">
+                            <span class="material-icons-round" style="font-size: 18px;">power</span>
+                            Power Supply
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-content">
-            <div class="loading-spinner-large"></div>
-            <h2>Script Running</h2>
-            <p>Please wait while the script executes in the background...</p>
+            <div class="loading-spinner"></div>
+            <h2>Processing...</h2>
+            <p>Please wait while the script executes</p>
         </div>
     </div>
 
@@ -712,33 +1018,35 @@
     <div id="configGeneratorModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="configGeneratorModalTitle">Config Generator</h2>
-                <button class="close-btn" onclick="closeConfigGeneratorModal()">×</button>
+                <h2>
+                    <span class="material-icons-round">settings</span>
+                    <span id="configGeneratorModalTitle">Config Generator</span>
+                </h2>
+                <button class="close-btn" onclick="closeConfigGeneratorModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
             </div>
             <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 15px;">Enter the interface name and IP address with CIDR notation:</p>
-                <div class="config-generator-form">
-                    <div>
-                        <label style="color: var(--text-primary); font-weight: 500; margin-bottom: 5px; display: block;">Interface Name</label>
-                        <input 
-                            type="text" 
-                            id="interfaceInput" 
-                            placeholder="e.g., GigabitEthernet0/0/0" 
-                        >
-                    </div>
-                    <div>
-                        <label style="color: var(--text-primary); font-weight: 500; margin-bottom: 5px; display: block;">IP Address (CIDR)</label>
-                        <input 
-                            type="text" 
-                            id="ipInput" 
-                            placeholder="e.g., 192.168.1.1/24" 
-                        >
-                    </div>
+                <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                    Enter the interface name and IP address with CIDR notation to generate configuration.
+                </p>
+                <div class="form-group">
+                    <label>Interface Name</label>
+                    <input type="text" id="interfaceInput" placeholder="e.g., GigabitEthernet0/0/0">
+                    <p class="form-hint">Enter the full interface name as shown on the device</p>
+                </div>
+                <div class="form-group">
+                    <label>IP Address (CIDR)</label>
+                    <input type="text" id="ipInput" placeholder="e.g., 192.168.1.1/24">
+                    <p class="form-hint">Include the subnet prefix (e.g., /24 for 255.255.255.0)</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="cancel-btn" onclick="closeConfigGeneratorModal()">Cancel</button>
-                <button class="backup-btn" onclick="submitConfigGenerator()">Generate</button>
+                <button class="btn btn-secondary" onclick="closeConfigGeneratorModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitConfigGenerator()">
+                    <span class="material-icons-round" style="font-size: 18px;">auto_fix_high</span>
+                    Generate
+                </button>
             </div>
         </div>
     </div>
@@ -747,23 +1055,30 @@
     <div id="deviceInputModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="deviceInputModalTitle">Configuration Backup</h2>
-                <button class="close-btn" onclick="closeDeviceInputModal()">×</button>
+                <h2>
+                    <span class="material-icons-round">backup</span>
+                    <span id="deviceInputModalTitle">Configuration Backup</span>
+                </h2>
+                <button class="close-btn" onclick="closeDeviceInputModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
             </div>
             <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 15px;">Enter the IP address of the device you want to backup:</p>
-                <div class="device-input-form">
-                    <input 
-                        type="text" 
-                        id="deviceIpInput" 
-                        placeholder="e.g., 192.168.1.1" 
-                        pattern="^(\d{1,3}\.){3}\d{1,3}$"
-                    >
+                <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                    Enter the IP address of the device you want to backup.
+                </p>
+                <div class="form-group">
+                    <label>Device IP Address</label>
+                    <input type="text" id="deviceIpInput" placeholder="e.g., 192.168.1.1" pattern="^(\d{1,3}\.){3}\d{1,3}$">
+                    <p class="form-hint">The device must be reachable and have SSH enabled</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="cancel-btn" onclick="closeDeviceInputModal()">Cancel</button>
-                <button class="backup-btn" onclick="submitDeviceBackup()">Backup</button>
+                <button class="btn btn-secondary" onclick="closeDeviceInputModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitDeviceBackup()">
+                    <span class="material-icons-round" style="font-size: 18px;">cloud_upload</span>
+                    Backup
+                </button>
             </div>
         </div>
     </div>
@@ -772,48 +1087,59 @@
     <div id="cnsHealthcheckModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="cnsHealthcheckModalTitle">CNS Health Check</h2>
-                <button class="close-btn" onclick="closeCnsHealthcheckModal()">×</button>
+                <h2>
+                    <span class="material-icons-round">monitor_heart</span>
+                    <span id="cnsHealthcheckModalTitle">CNS Health Check</span>
+                </h2>
+                <button class="close-btn" onclick="closeCnsHealthcheckModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
             </div>
             <div class="modal-body">
-                <p style="color: var(--text-secondary); margin-bottom: 15px;">Enter a single IP address or IP range to scan for devices:</p>
-                <div class="device-input-form">
-                    <div>
-                        <label style="color: var(--text-primary); font-weight: 500; margin-bottom: 5px; display: block;">IP Address or Range</label>
-                        <input 
-                            type="text" 
-                            id="ipRangeInput" 
-                            placeholder="e.g., 10.10.10.1 or 10.10.10.1 - 10.10.10.254"
-                        >
-                    </div>
+                <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                    Enter a single IP address or an IP range to scan for devices.
+                </p>
+                <div class="form-group">
+                    <label>IP Address or Range</label>
+                    <input type="text" id="ipRangeInput" placeholder="e.g., 10.10.10.1 or 10.10.10.1 - 10.10.10.254">
+                    <p class="form-hint">Use a dash (-) to specify a range of IP addresses</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="cancel-btn" onclick="closeCnsHealthcheckModal()">Cancel</button>
-                <button class="backup-btn" onclick="submitCnsHealthcheck()">Start Health Check</button>
+                <button class="btn btn-secondary" onclick="closeCnsHealthcheckModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitCnsHealthcheck()">
+                    <span class="material-icons-round" style="font-size: 18px;">play_circle</span>
+                    Start Health Check
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content large">
             <div class="modal-header">
-                <h2 id="modalTitle">Script Execution</h2>
-                <button class="close-btn" onclick="closeModal()">×</button>
+                <h2>
+                    <span class="material-icons-round">task_alt</span>
+                    <span id="modalTitle">Script Execution</span>
+                </h2>
+                <button class="close-btn" onclick="closeModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
             </div>
             <div class="modal-body">
                 <div id="resultMessage"></div>
-                <div id="resultDetails" style="font-size: 12px; color: var(--text-secondary); margin-top: 10px;"></div>
+                <div id="resultDetails"></div>
             </div>
             <div class="modal-footer">
-                <button class="close-modal-btn" onclick="closeModal()">Close</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
             </div>
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="footer">
-        <p>Cisco Highly Confidential</p>
+        <p>Cisco Highly Confidential • CNS Skynet Toolbox</p>
     </footer>
 
     <script>
@@ -822,20 +1148,15 @@
             const body = document.body;
             const isDarkMode = body.classList.toggle('dark-mode');
             const icon = document.getElementById('darkModeIcon');
-            
-            // Save preference to localStorage
             localStorage.setItem('darkMode', isDarkMode);
-            
-            // Update icon
-            icon.textContent = isDarkMode ? '☀️' : '🌙';
+            icon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
         }
 
-        // Load dark mode preference on page load
         window.addEventListener('DOMContentLoaded', function() {
             const savedDarkMode = localStorage.getItem('darkMode') === 'true';
             if (savedDarkMode) {
                 document.body.classList.add('dark-mode');
-                document.getElementById('darkModeIcon').textContent = '☀️';
+                document.getElementById('darkModeIcon').textContent = 'light_mode';
             }
         });
 
@@ -848,19 +1169,14 @@
         }
 
         function runScript(scriptId, scriptName) {
-            // Special handling for Config Generator
             if (scriptId === 'config_generator') {
                 showConfigGeneratorModal(scriptId, scriptName);
                 return;
             }
-            
-            // Special handling for Configuration Backup
             if (scriptId === 'config_backup') {
                 showDeviceInputModal(scriptId, scriptName);
                 return;
             }
-            
-            // Special handling for CNS Health Check
             if (scriptId === 'cns_healthcheck') {
                 showCnsHealthcheckModal(scriptId, scriptName);
                 return;
@@ -868,30 +1184,25 @@
 
             const btn = event.target;
             btn.classList.add('loading');
-            btn.innerHTML = '<span class="loading-spinner"></span>Loading...';
+            btn.innerHTML = '<span class="loading-spinner" style="width:20px;height:20px;border-width:2px;margin:0;"></span> Loading...';
             showLoadingOverlay();
 
             fetch(`{{ url_for('run_script', script_id='') }}${scriptId}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Content-Type': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {
                 hideLoadingOverlay();
                 showResultModal(data, scriptName);
                 btn.classList.remove('loading');
-                btn.innerHTML = 'Run Script';
+                btn.innerHTML = '<span class="material-icons-round">play_arrow</span> Run Script';
             })
             .catch(error => {
                 hideLoadingOverlay();
-                showResultModal({
-                    status: 'error',
-                    message: 'An error occurred while executing the script'
-                }, scriptName);
+                showResultModal({ status: 'error', message: 'An error occurred while executing the script' }, scriptName);
                 btn.classList.remove('loading');
-                btn.innerHTML = 'Run Script';
+                btn.innerHTML = '<span class="material-icons-round">play_arrow</span> Run Script';
             });
         }
 
@@ -917,37 +1228,21 @@
             }
 
             closeConfigGeneratorModal();
-            
-            const submitBtn = event.target;
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<span class="loading-spinner"></span>Generating...';
             showLoadingOverlay();
 
             fetch(`{{ url_for('run_script', script_id='config_generator') }}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    interface: interfaceInput,
-                    ip_with_prefix: ipInput
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ interface: interfaceInput, ip_with_prefix: ipInput })
             })
             .then(response => response.json())
             .then(data => {
                 hideLoadingOverlay();
                 showResultModal(data, 'Config Generator');
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = 'Generate';
             })
             .catch(error => {
                 hideLoadingOverlay();
-                showResultModal({
-                    status: 'error',
-                    message: 'An error occurred while generating the config: ' + error.message
-                }, 'Config Generator');
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = 'Generate';
+                showResultModal({ status: 'error', message: 'An error occurred: ' + error.message }, 'Config Generator');
             });
         }
 
@@ -964,41 +1259,26 @@
 
         function submitDeviceBackup() {
             const deviceIp = document.getElementById('deviceIpInput').value.trim();
-            
             if (!deviceIp) {
                 alert('Please enter a device IP address');
                 return;
             }
-
             closeDeviceInputModal();
-            
-            const submitBtn = event.target;
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<span class="loading-spinner"></span>Backing up...';
             showLoadingOverlay();
 
             fetch(`{{ url_for('run_script', script_id='config_backup') }}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ device_ip: deviceIp })
             })
             .then(response => response.json())
             .then(data => {
                 hideLoadingOverlay();
                 showResultModal(data, 'Configuration Backup');
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = 'Backup';
             })
             .catch(error => {
                 hideLoadingOverlay();
-                showResultModal({
-                    status: 'error',
-                    message: 'An error occurred while executing the backup: ' + error.message
-                }, 'Configuration Backup');
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = 'Backup';
+                showResultModal({ status: 'error', message: 'An error occurred: ' + error.message }, 'Configuration Backup');
             });
         }
 
@@ -1015,135 +1295,139 @@
 
         function submitCnsHealthcheck() {
             const ipRange = document.getElementById('ipRangeInput').value.trim();
-            
             if (!ipRange) {
-                alert('Please enter an IP address or range (e.g., 10.10.10.1 or 10.10.10.1 - 10.10.10.254)');
+                alert('Please enter an IP address or range');
                 return;
             }
-
             closeCnsHealthcheckModal();
-            
-            const submitBtn = event.target;
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<span class="loading-spinner"></span>Checking...';
             showLoadingOverlay();
 
             fetch(`{{ url_for('run_script', script_id='cns_healthcheck') }}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ip_range: ipRange })
             })
             .then(response => response.json())
             .then(data => {
                 hideLoadingOverlay();
                 showResultModal(data, 'CNS Health Check');
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = 'Start Health Check';
             })
             .catch(error => {
                 hideLoadingOverlay();
-                showResultModal({
-                    status: 'error',
-                    message: 'An error occurred while executing the health check: ' + error.message
-                }, 'CNS Health Check');
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = 'Start Health Check';
+                showResultModal({ status: 'error', message: 'An error occurred: ' + error.message }, 'CNS Health Check');
             });
         }
 
         function showResultModal(data, scriptName) {
             document.getElementById('modalTitle').textContent = scriptName;
-            
             const resultMessageDiv = document.getElementById('resultMessage');
             const resultClass = data.status === 'success' ? 'result-success' : 'result-error';
-            const icon = data.status === 'success' ? '✓' : '✗';
+            const icon = data.status === 'success' ? 'check_circle' : 'error';
             
             resultMessageDiv.innerHTML = `
                 <div class="result-message ${resultClass}">
-                    ${icon} ${data.message}
+                    <span class="material-icons-round">${icon}</span>
+                    <div>${data.message}</div>
                 </div>
             `;
 
             let detailsHtml = '';
-            if (data.hostname) {
-                detailsHtml += `Hostname: ${data.hostname}<br>`;
-            }
-            if (data.filename) {
-                detailsHtml += `Filename: ${data.filename}<br>`;
-            }
-            if (data.interface) {
-                detailsHtml += `Interface: ${data.interface}<br>`;
-            }
-            if (data.ip) {
-                detailsHtml += `IP Address: ${data.ip}<br>`;
-            }
-            if (data.netmask) {
-                detailsHtml += `Netmask: ${data.netmask}<br>`;
-            }
-            if (data.gateway) {
-                detailsHtml += `Gateway: ${data.gateway}<br>`;
-            }
+            
+            if (data.hostname) detailsHtml += `<p><strong>Hostname:</strong> ${data.hostname}</p>`;
+            if (data.filename) detailsHtml += `<p><strong>Filename:</strong> ${data.filename}</p>`;
+            if (data.interface) detailsHtml += `<p><strong>Interface:</strong> ${data.interface}</p>`;
+            if (data.ip) detailsHtml += `<p><strong>IP Address:</strong> ${data.ip}</p>`;
+            
             if (data.config) {
-                detailsHtml += `<br><strong style="color: var(--accent-blue);">Generated Configuration:</strong><br>`;
-                detailsHtml += `<textarea id="configText" readonly style="width: 100%; height: 250px; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: monospace; font-size: 11px; background: var(--bg-primary); color: var(--text-primary);">${data.config}</textarea>`;
-                detailsHtml += `<button class="copy-btn" onclick="copyToClipboard('configText')">📋 Copy to Clipboard</button>`;
+                detailsHtml += `
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--md-on-surface);">Generated Configuration:</label>
+                        <textarea id="configText" readonly class="config-textarea">${data.config}</textarea>
+                        <button class="copy-btn" onclick="copyToClipboard('configText')">
+                            <span class="material-icons-round" style="font-size: 18px;">content_copy</span>
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                `;
             }
             
-            // For Configuration Backup, create a summary to copy
             if (data.hostname && data.filename && !data.config) {
                 const backupSummary = `Backup Summary\n${'='.repeat(50)}\n\nHostname: ${data.hostname}\nFilename: ${data.filename}\nDevice IP: ${data.ip || 'N/A'}\nBackup Time: ${new Date(data.timestamp).toLocaleString()}\n\n${'='.repeat(50)}`;
-                detailsHtml += `<br><strong style="color: var(--accent-blue);">Backup Summary:</strong><br>`;
-                detailsHtml += `<textarea id="backupSummaryText" readonly style="width: 100%; height: 150px; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-family: monospace; font-size: 11px; background: var(--bg-primary); color: var(--text-primary);">${backupSummary}</textarea>`;
-                detailsHtml += `<button class="copy-btn" onclick="copyToClipboard('backupSummaryText')">📋 Copy to Clipboard</button>`;
+                detailsHtml += `
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--md-on-surface);">Backup Summary:</label>
+                        <textarea id="backupSummaryText" readonly class="config-textarea" style="height: 150px;">${backupSummary}</textarea>
+                        <button class="copy-btn" onclick="copyToClipboard('backupSummaryText')">
+                            <span class="material-icons-round" style="font-size: 18px;">content_copy</span>
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                `;
             }
             
-            // For CNS Health Check, display device table
             if (data.total_devices !== undefined && data.data) {
-                console.log('Health check data:', data);
-                console.log('Devices:', data.data);
+                detailsHtml += `
+                    <div style="margin-top: 20px;">
+                        <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+                            <div class="meta-chip" style="background: var(--md-surface-container); color: var(--md-on-surface);">
+                                <span class="material-icons-round" style="font-size: 16px;">devices</span>
+                                ${data.total_devices} devices scanned
+                            </div>
+                            <div class="meta-chip" style="background: var(--md-success-container); color: var(--md-success);">
+                                <span class="material-icons-round" style="font-size: 16px;">check_circle</span>
+                                ${data.success_count} successful
+                            </div>
+                            <div class="meta-chip" style="background: var(--md-error-container); color: var(--md-error);">
+                                <span class="material-icons-round" style="font-size: 16px;">error</span>
+                                ${data.error_count} failed
+                            </div>
+                        </div>
+                        <div class="data-table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>IP Address</th>
+                                        <th>Hostname</th>
+                                        <th>Platform</th>
+                                        <th>Version</th>
+                                        <th>Mgmt Interface</th>
+                                        <th>Mgmt IP</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
                 
-                detailsHtml += `<br><strong style="color: var(--accent-blue);">Health Check Results (${data.total_devices} devices scanned) - Success: ${data.success_count}, Failed: ${data.error_count}</strong><br>`;
-                detailsHtml += `<div style="max-height: 600px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 5px;">`;
-                detailsHtml += `<table style="width: 100%; border-collapse: collapse; font-size: 12px;">`;
-                detailsHtml += `<thead style="background: var(--accent-blue); color: white; position: sticky; top: 0;">`;
-                detailsHtml += `<tr>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 120px;">IP</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 100px;">Hostname</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 80px;">Platform</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 80px;">Version</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 100px;">Mgmt Interface</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: left; min-width: 120px;">Mgmt IP</th>`;
-                detailsHtml += `<th style="padding: 8px; border: 1px solid var(--border-color); text-align: center; min-width: 50px;">Status</th>`;
-                detailsHtml += `</tr>`;
-                detailsHtml += `</thead>`;
-                detailsHtml += `<tbody>`;
-                
-                data.data.forEach((device, index) => {
-                    const statusIcon = device.status === 'success' ? '✓' : '✗';
-                    const statusColor = device.status === 'success' ? 'color: #28a745;' : 'color: #dc3545;';
-                    detailsHtml += `<tr style="border-bottom: 1px solid var(--border-color);">`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.ip}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.hostname}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.platform}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.version}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.mgmt_interface}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color);">${device.mgmt_ip}</td>`;
-                    detailsHtml += `<td style="padding: 8px; border: 1px solid var(--border-color); text-align: center; ${statusColor}; font-weight: bold;">${statusIcon}</td>`;
-                    detailsHtml += `</tr>`;
+                data.data.forEach(device => {
+                    const statusClass = device.status === 'success' ? 'status-success' : 'status-error';
+                    const statusIcon = device.status === 'success' ? 'check' : 'close';
+                    detailsHtml += `
+                        <tr>
+                            <td>${device.ip}</td>
+                            <td>${device.hostname}</td>
+                            <td>${device.platform}</td>
+                            <td>${device.version}</td>
+                            <td>${device.mgmt_interface}</td>
+                            <td>${device.mgmt_ip}</td>
+                            <td><span class="status-badge ${statusClass}"><span class="material-icons-round" style="font-size: 14px;">${statusIcon}</span></span></td>
+                        </tr>
+                    `;
                 });
                 
-                detailsHtml += `</tbody>`;
-                detailsHtml += `</table>`;
-                detailsHtml += `</div>`;
-                
-                // Add download CSV button
-                detailsHtml += `<button class="copy-btn" style="background: #007bff; margin-top: 15px;" onclick="downloadHealthCheckCSV(${JSON.stringify(data.data).replace(/"/g, '&quot;')})">📥 Download as CSV</button>`;
+                detailsHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="copy-btn" style="background: var(--md-primary); margin-top: 16px;" onclick="downloadHealthCheckCSV(${JSON.stringify(data.data).replace(/"/g, '&quot;')})">
+                            <span class="material-icons-round" style="font-size: 18px;">download</span>
+                            Download as CSV
+                        </button>
+                    </div>
+                `;
             }
             
             if (data.timestamp) {
-                detailsHtml += `<br><br>Executed at: ${new Date(data.timestamp).toLocaleString()}`;
+                detailsHtml += `<p style="margin-top: 20px; color: var(--md-on-surface-variant); font-size: 13px;">Executed at: ${new Date(data.timestamp).toLocaleString()}</p>`;
             }
             
             document.getElementById('resultDetails').innerHTML = detailsHtml;
@@ -1155,22 +1439,16 @@
         }
 
         function downloadHealthCheckCSV(devices) {
-            // Send device data to backend for CSV generation
             fetch('{{ url_for("download_health_check_csv") }}', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ devices: devices })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to download CSV');
-                }
+                if (!response.ok) throw new Error('Failed to download CSV');
                 return response.blob();
             })
             .then(blob => {
-                // Create a temporary URL for the blob
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -1182,81 +1460,42 @@
             })
             .catch(error => {
                 console.error('Error downloading CSV:', error);
-                alert('Failed to download CSV file. Please try again.');
+                alert('Failed to download CSV file.');
             });
         }
 
-        function copyToClipboard(textareaId = 'configText') {
+        function copyToClipboard(textareaId) {
             const textElement = document.getElementById(textareaId);
             if (!textElement) return;
-
-            // Select the text
             textElement.select();
-            
-            // Copy to clipboard
             try {
                 document.execCommand('copy');
-                
-                // Visual feedback
-                const btn = event.target;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '✓ Copied!';
+                const btn = event.target.closest('.copy-btn');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="material-icons-round" style="font-size: 18px;">check</span> Copied!';
                 btn.classList.add('copied');
-                
-                // Reset button after 2 seconds
                 setTimeout(() => {
-                    btn.innerHTML = originalText;
+                    btn.innerHTML = originalHtml;
                     btn.classList.remove('copied');
                 }, 2000);
             } catch (err) {
-                // Fallback for older browsers
-                alert('Failed to copy to clipboard. Please try again.');
+                alert('Failed to copy to clipboard.');
             }
         }
 
-        // Close modal when clicking outside
-        document.getElementById('resultModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+        // Close modals on backdrop click
+        ['resultModal', 'deviceInputModal', 'configGeneratorModal', 'cnsHealthcheckModal'].forEach(id => {
+            document.getElementById(id).addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
         });
 
-        document.getElementById('deviceInputModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDeviceInputModal();
-            }
-        });
-
-        document.getElementById('configGeneratorModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeConfigGeneratorModal();
-            }
-        });
-
-        document.getElementById('cnsHealthcheckModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeCnsHealthcheckModal();
-            }
-        });
-
-        // Allow Enter key to submit inputs
-        document.getElementById('deviceIpInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                submitDeviceBackup();
-            }
-        });
-
-        document.getElementById('ipInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                submitConfigGenerator();
-            }
-        });
-
-        document.getElementById('ipRangeInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                submitCnsHealthcheck();
-            }
-        });
+        // Enter key handlers
+        document.getElementById('deviceIpInput').addEventListener('keypress', e => { if (e.key === 'Enter') submitDeviceBackup(); });
+        document.getElementById('ipInput').addEventListener('keypress', e => { if (e.key === 'Enter') submitConfigGenerator(); });
+        document.getElementById('ipRangeInput').addEventListener('keypress', e => { if (e.key === 'Enter') submitCnsHealthcheck(); });
     </script>
 </body>
 </html>

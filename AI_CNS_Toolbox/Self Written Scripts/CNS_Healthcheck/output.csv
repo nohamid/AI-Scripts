@@ -1,2 +1,2 @@
-hostname,platform,version,serial,mgmt_interface,mgmt_ip,uptime
-auto-provisioned,C8000V,17.15.1a,9GIMKTP9H72,GigabitEthernet1,10.49.214.225,"2 days, 23 hours, 44 minutes"
+ip_address,hostname,platform,version,serial,mgmt_interface,mgmt_ip,uptime
+10.49.214.225,auto-provisioned,C8000V,17.15.1a,9GIMKTP9H72,GigabitEthernet1,10.49.214.225,"1 week, 2 days, 17 hours, 47 minutes"

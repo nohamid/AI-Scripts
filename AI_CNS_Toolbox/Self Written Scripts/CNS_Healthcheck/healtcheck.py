@@ -2,12 +2,13 @@ import ipaddress
 from netmiko import ConnectHandler
 import pandas as pd
 import os
-#cec
+
 # Check the Syntax of the input:
-def is_valid_ip_range(IP_Range):
+def is_valid_ip_or_range(IP_Range):
+    """Validates a single IP address or an IP range (e.g., '10.10.10.1' or '10.10.10.1 - 10.10.10.254')"""
     parts = IP_Range.split('-')
     
-    # Handle single IP address
+    # Single IP address
     if len(parts) == 1:
         try:
             ipaddress.IPv4Address(parts[0].strip())
@@ -15,35 +16,37 @@ def is_valid_ip_range(IP_Range):
         except ValueError:
             return False
     
-    # Handle IP range
-    elif len(parts) == 2:
+    # IP range
+    if len(parts) == 2:
         start_ip_str = parts[0].strip()
         end_ip_str = parts[1].strip()
 
         try:
-            # Validate syntax and values using the ipaddress module
             start_ip = ipaddress.IPv4Address(start_ip_str)
             end_ip = ipaddress.IPv4Address(end_ip_str)
             return True 
         
         except ValueError:
-            # This triggers if an IP is malformed (e.g., 10.10.10.300)
             return False
     
-    else:
-        return False
+    return False
 
+
+# Keep the old function name for backward compatibility
+def is_valid_ip_range(IP_Range):
+    return is_valid_ip_or_range(IP_Range)
 
 
 def get_ip_list(IP_Range):
-    """Converts '10.10.10.1 - 10.10.10.3' into ['10.10.10.1', '10.10.10.2', '10.10.10.3'] or '10.10.10.1' into ['10.10.10.1']"""
+    """Converts '10.10.10.1 - 10.10.10.3' into ['10.10.10.1', '10.10.10.2', '10.10.10.3']
+       Also handles single IP: '10.10.10.1' returns ['10.10.10.1']"""
     parts = IP_Range.split('-')
     
-    # Handle single IP address
+    # Single IP address
     if len(parts) == 1:
         return [parts[0].strip()]
     
-    # Handle IP range
+    # IP range
     start_ip = ipaddress.IPv4Address(parts[0].strip())
     end_ip = ipaddress.IPv4Address(parts[1].strip())
     
@@ -192,10 +195,10 @@ def run_cns_healthcheck(ip_range, username="admin", password="m1amivice19!"):
 # Interactive mode (for standalone script execution)
 if __name__ == '__main__':
     while True:
-        IP_Range = input("Insert the IP Address Range (10.10.10.1 - 10.10.10.254): ")
+        IP_Range = input("Insert IP Address or Range (e.g., 10.10.10.1 or 10.10.10.1 - 10.10.10.254): ")
 
         if is_valid_ip_range(IP_Range):
-            print(f"Thanks, I'm proceeding with this IP-Range: {IP_Range}")
+            print(f"Thanks, I'm proceeding with: {IP_Range}")
             break
         else:
             print("Invalid syntax or IP address. Please try again.")
