@@ -1333,6 +1333,16 @@
 
             let detailsHtml = '';
             
+            // Show IP status message separately (for Config Generator)
+            if (data.ip_status_message) {
+                detailsHtml += `
+                    <div style="margin-bottom: 16px; padding: 12px 16px; background: var(--md-surface-container); border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-icons-round" style="color: var(--md-primary);">info</span>
+                        <span>${data.ip_status_message}</span>
+                    </div>
+                `;
+            }
+            
             if (data.hostname) detailsHtml += `<p><strong>Hostname:</strong> ${data.hostname}</p>`;
             if (data.filename) detailsHtml += `<p><strong>Filename:</strong> ${data.filename}</p>`;
             if (data.interface) detailsHtml += `<p><strong>Interface:</strong> ${data.interface}</p>`;

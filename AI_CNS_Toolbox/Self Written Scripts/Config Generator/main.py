@@ -2,7 +2,8 @@
 import ipaddress
 from icmplib import ping
 import pyperclip
-# test
+import sys
+
 # Input to gather information: 
 
 interface = input("What Interface do you want to configure? ").replace(" ", "")
@@ -22,7 +23,7 @@ try:
         iface = ipaddress.IPv4Interface(f"{ip}/{network.prefixlen}")
 
 except ValueError:
-    print("Invalid IP format. Use 10.10.10.1/24 or 10.10.10.1 255.255.255.0")
+    print("Invalid IP format. Use 10.10.10.1/24 or 10.10.10.1 255.255.255.0", file=sys.stderr)
     exit(1)
 
 # Extract values
@@ -39,10 +40,12 @@ def check_device(ip_only):
     host = ping(ip_only, count=2, interval=0.2)
     
     if host.is_alive:
-        print(f"The IP address is already in use! {ip_only}")
-        exit()
+        # Print error to stderr and exit with error code
+        print(f"IP address {ip_only} is already in use!", file=sys.stderr)
+        exit(1)
     else:
-        print(f"The IP Addess: {ip_only} is free.")
+        # Print IP status to stderr (not mixed with config output)
+        print(f"IP Address {ip_only} is free.", file=sys.stderr)
         
 
 check_device(ip_only)

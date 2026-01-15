@@ -24,9 +24,13 @@ from healtcheck import run_cns_healthcheck
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'your-secret-key-change-this'
 
+# Performance: Configure Flask for better performance
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # Cache static files for 1 year
+app.config['JSON_SORT_KEYS'] = False  # Faster JSON serialization
+
 # Authentication credentials
-VALID_USERNAME = 'cisco'
-VALID_PASSWORD = 'cisco'
+VALID_USERNAME = 'admin'
+VALID_PASSWORD = 'm1amivice19!'
 
 # Available scripts in the toolbox
 AVAILABLE_SCRIPTS = {
@@ -47,7 +51,7 @@ AVAILABLE_SCRIPTS = {
     },
     'device_inventory': {
         'name': 'Device Inventory',
-        'description': 'Does it makes sende to write a script to reset a Cisco device and prepare it for storage?',
+        'description': 'Does it makes sense to write a script to reset a Cisco device and prepare it for storage?',
         'icon': '📦'
     },
     'performance_report': {
@@ -153,31 +157,38 @@ with patch('builtins.input', side_effect=inputs):
         pass  # Ignore sys.exit() calls from the script
 """
             
-            # Execute the runner code
+            # Execute the runner code with timeout for performance
             result = subprocess.run(
                 [sys.executable, '-c', runner_code],
                 capture_output=True,
                 text=True,
-                cwd=str(script_dir)
+                cwd=str(script_dir),
+                timeout=15
             )
             
-            if result.returncode != 0:
-                error_msg = result.stderr if result.stderr else result.stdout if result.stdout else "Unknown error occurred"
+            # Check stderr for IP status message
+            stderr_output = result.stderr.strip() if result.stderr else ""
+            stdout_output = result.stdout.strip() if result.stdout else ""
+            
+            # Check if IP is in use (exit code 1 or error message in stderr)
+            if result.returncode != 0 or "already in use" in stderr_output.lower():
                 return jsonify({
                     'status': 'error',
                     'script': script_name,
-                    'message': error_msg,
-                    'stdout': result.stdout,
-                    'stderr': result.stderr,
+                    'message': stderr_output if stderr_output else "IP address is already in use!",
+                    'ip_status': 'in_use',
                     'timestamp': datetime.now().isoformat()
                 }), 400
             
-            config_output = result.stdout.strip()
+            # Success - config was generated
+            config_output = stdout_output
+            ip_status_message = stderr_output  # "IP Address x.x.x.x is free."
             
             return jsonify({
                 'status': 'success',
                 'script': script_name,
                 'message': 'Configuration generated successfully',
+                'ip_status_message': ip_status_message,
                 'interface': interface,
                 'ip': ip_with_prefix,
                 'config': config_output,
@@ -350,6 +361,14 @@ def download_health_check_csv():
             'message': f'Failed to generate CSV: {str(e)}'
         }), 500
 
+# Performance: Add cache headers for static files
+@app.after_request
+def add_cache_headers(response):
+    if 'static' in request.path:
+        response.cache_control.max_age = 31536000
+        response.cache_control.public = True
+    return response
+
 @app.errorhandler(404)
 def not_found(error):
     return render_template('404.html'), 404
@@ -364,4 +383,5 @@ if __name__ == '__main__':
     
     # Run the Flask app
     # Set debug=False in production
-    app.run(debug=False, host='0.0.0.0', port=8080)
+    # threaded=True enables concurrent request handling
+    app.run(debug=False, host='0.0.0.0', port=8080, threaded=True)
