@@ -50,32 +50,40 @@ CACHE_DIR = os.path.join(SCRIPT_DIR, ".icon_cache")
 
 
 def _resolve_icon_dir() -> str:
-    """Find the 'Cisco ICONS' folder.
+    """Find the icon folder.
 
     Searches (in order):
       1. ``$CDP_ICON_DIR`` environment variable.
-      2. ``<script_dir>/Cisco ICONS``
-      3. Walks up to 5 parent directories looking for a sibling
-         ``Cisco ICONS`` folder (handles the user keeping the icons one or
-         two levels above the toolbox).
+      2. ``<script_dir>/<candidate-name>``
+      3. Walks up to 5 parent directories looking for a sibling folder with
+         one of the candidate names.
+
+    Candidate names handle both the original ``Cisco ICONS`` (with a space)
+    and the underscore variant ``Cisco_ICONS`` that ships in this repo.
     """
+    candidates = ("Cisco_ICONS", "Cisco ICONS", "cisco_icons", "cisco icons")
+
     env = os.environ.get("CDP_ICON_DIR")
     if env and os.path.isdir(env):
         return env
 
-    local = os.path.join(SCRIPT_DIR, "Cisco ICONS")
-    if os.path.isdir(local):
-        return local
+    for name in candidates:
+        local = os.path.join(SCRIPT_DIR, name)
+        if os.path.isdir(local):
+            return local
 
     here = SCRIPT_DIR
-    for _ in range(5):
+    for _ in range(6):
         here = os.path.dirname(here)
-        if not here:
+        if not here or here == os.path.dirname(here):
             break
-        candidate = os.path.join(here, "Cisco ICONS")
-        if os.path.isdir(candidate):
-            return candidate
-    return local  # fallback (may not exist; handled gracefully downstream)
+        for name in candidates:
+            candidate = os.path.join(here, name)
+            if os.path.isdir(candidate):
+                return candidate
+
+    # Fallback (may not exist; handled gracefully downstream).
+    return os.path.join(SCRIPT_DIR, candidates[0])
 
 
 ICON_DIR = _resolve_icon_dir()
