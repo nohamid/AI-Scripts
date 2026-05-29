@@ -7,8 +7,13 @@ genie==23.8
 pyats==23.8
 pandas
 python-pptx>=0.6.21
-# Optional: enables rendering of the Cisco SVG icons placed in
-# "Self Written Scripts/CDP_to_PPTX/Cisco ICONS". On macOS the Cairo
-# native library must also be installed via `brew install cairo`.
-# If unavailable, the CDP-to-PPTX script falls back to colored shapes.
+# SVG renderer used by CDP_to_PPTX. Two options are supported:
+#   1) cairosvg  - fast and high quality, but needs the Cairo *system*
+#      library. On macOS: `brew install cairo`. On Ubuntu/Debian:
+#      `sudo apt-get install -y libcairo2 libpango-1.0-0 libpangocairo-1.0-0`.
+#   2) svglib + reportlab - pure Python fallback, no system deps required.
+# Install both so the script can fall back automatically:
 cairosvg>=2.7.0
+svglib>=1.5.1
+reportlab>=4.0.0
+pillow>=10.0.0

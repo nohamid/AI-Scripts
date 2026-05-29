@@ -1396,14 +1396,23 @@
                 }
                 const neighborCount = response.headers.get('X-Neighbor-Count') || '?';
                 const localNameOut = response.headers.get('X-Local-Name') || '';
+                const renderer = response.headers.get('X-Renderer') || 'none';
+                const iconDir = response.headers.get('X-Icon-Dir') || '';
+                let warnings = [];
+                const wB64 = response.headers.get('X-Warnings-B64');
+                if (wB64) {
+                    try {
+                        warnings = JSON.parse(atob(wB64));
+                    } catch (_) { warnings = []; }
+                }
                 const disposition = response.headers.get('Content-Disposition') || '';
                 let filename = 'cdp_topology.pptx';
                 const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^;"']+)/i);
                 if (match) filename = decodeURIComponent(match[1].replace(/"/g, ''));
                 const blob = await response.blob();
-                return { blob, filename, neighborCount, localNameOut };
+                return { blob, filename, neighborCount, localNameOut, renderer, iconDir, warnings };
             })
-            .then(({ blob, filename, neighborCount, localNameOut }) => {
+            .then(({ blob, filename, neighborCount, localNameOut, renderer, iconDir, warnings }) => {
                 hideLoadingOverlay();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1414,11 +1423,20 @@
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
 
+                const usingFallback = (renderer === 'none' || warnings.length > 0);
+                const status = usingFallback ? 'warning' : 'success';
+                let msg = `PowerPoint generated and downloaded (${neighborCount} neighbor entr${neighborCount === '1' ? 'y' : 'ies'}` +
+                          (localNameOut ? `, local device: ${localNameOut}` : '') + ').';
+                if (usingFallback) {
+                    msg += ` SVG renderer in use: ${renderer}. Icons may be rendered as colored shapes instead of Cisco SVG icons.`;
+                }
                 showResultModal({
-                    status: 'success',
-                    message: `PowerPoint generated and downloaded (${neighborCount} neighbor entr${neighborCount === '1' ? 'y' : 'ies'}` +
-                             (localNameOut ? `, local device: ${localNameOut}` : '') + ').',
+                    status: status === 'warning' ? 'success' : 'success',
+                    message: msg,
                     filename: filename,
+                    renderer: renderer,
+                    icon_dir: iconDir,
+                    warnings: warnings,
                     timestamp: new Date().toISOString()
                 }, 'CDP to PowerPoint');
             })
@@ -1460,6 +1478,22 @@
             if (data.filename) detailsHtml += `<p><strong>Filename:</strong> ${data.filename}</p>`;
             if (data.interface) detailsHtml += `<p><strong>Interface:</strong> ${data.interface}</p>`;
             if (data.ip) detailsHtml += `<p><strong>IP Address:</strong> ${data.ip}</p>`;
+            if (data.renderer) detailsHtml += `<p><strong>SVG Renderer:</strong> ${data.renderer}</p>`;
+            if (data.icon_dir) detailsHtml += `<p><strong>Icon Folder:</strong> <code>${data.icon_dir}</code></p>`;
+            if (Array.isArray(data.warnings) && data.warnings.length) {
+                const items = data.warnings.map(w =>
+                    `<li style="margin-bottom: 6px;">${w.replace(/</g, '&lt;')}</li>`
+                ).join('');
+                detailsHtml += `
+                    <div style="margin-top: 16px; padding: 12px 16px; background: var(--md-warning-container, #FFF4E5); border-left: 4px solid #F59E0B; border-radius: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 8px;">
+                            <span class="material-icons-round" style="color: #F59E0B;">warning</span>
+                            Icon Rendering Warnings
+                        </div>
+                        <ul style="margin: 0; padding-left: 22px; font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--md-on-surface);">${items}</ul>
+                    </div>
+                `;
+            }
             
             if (data.config) {
                 detailsHtml += `

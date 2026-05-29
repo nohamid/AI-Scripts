@@ -15,12 +15,15 @@ web GUI via :func:`generate_pptx_from_cdp`.
 from __future__ import annotations
 
 import argparse
+import logging
 import math
 import os
 import re
 import sys
 from dataclasses import dataclass, field
 from typing import List, Optional
+
+log = logging.getLogger("cdp_to_pptx")
 
 # Make sure cairosvg can find the Homebrew-installed Cairo library on macOS
 # without the user having to set DYLD_FALLBACK_LIBRARY_PATH manually.
@@ -261,25 +264,115 @@ def classify_device(platform: str, capabilities: str) -> str:
 # Icon handling (with fallbacks if SVG icons or Cairo are unavailable)
 # ---------------------------------------------------------------------------
 
+# Warnings collected during the most recent call to generate_pptx_from_cdp().
+_ICON_WARNINGS: List[str] = []
+_RENDERER_CACHE: dict = {"backend": None, "render": None, "error": None}
+
+
+def _add_warning(msg: str) -> None:
+    if msg not in _ICON_WARNINGS:
+        _ICON_WARNINGS.append(msg)
+    log.warning("[cdp_to_pptx] %s", msg)
+
+
+def _get_renderer():
+    """Return (backend_name, render_callable) for SVG->PNG conversion.
+
+    Tries ``cairosvg`` first, then falls back to ``svglib`` + ``reportlab``
+    which is pure-Python and does not require system Cairo (handy on a
+    fresh Linux box without ``libcairo2``).
+    """
+    if _RENDERER_CACHE["backend"] is not None:
+        return _RENDERER_CACHE["backend"], _RENDERER_CACHE["render"]
+    if _RENDERER_CACHE["error"] is not None:
+        return None, None
+
+    # Try cairosvg.
+    try:
+        import cairosvg  # type: ignore
+
+        def _render_cairo(svg_path: str, png_path: str, size: int) -> None:
+            cairosvg.svg2png(
+                url=svg_path, write_to=png_path,
+                output_width=size, output_height=size,
+            )
+
+        _RENDERER_CACHE["backend"] = "cairosvg"
+        _RENDERER_CACHE["render"] = _render_cairo
+        log.info("[cdp_to_pptx] SVG renderer: cairosvg")
+        return "cairosvg", _render_cairo
+    except Exception as e:
+        _add_warning(
+            "cairosvg unavailable: " + repr(e)
+            + ". On Ubuntu install the system library with "
+            + "`sudo apt-get install -y libcairo2 libpango-1.0-0 libpangocairo-1.0-0`, "
+            + "or rely on the svglib fallback (`pip install svglib reportlab`)."
+        )
+
+    # Try svglib + reportlab (+ Pillow).
+    try:
+        from svglib.svglib import svg2rlg  # type: ignore
+        from reportlab.graphics import renderPM  # type: ignore
+
+        def _render_svglib(svg_path: str, png_path: str, size: int) -> None:
+            drawing = svg2rlg(svg_path)
+            if drawing is None:
+                raise RuntimeError(f"svglib could not parse {svg_path}")
+            w, h = float(drawing.width or size), float(drawing.height or size)
+            scale = size / max(w, h) if max(w, h) > 0 else 1.0
+            drawing.width = w * scale
+            drawing.height = h * scale
+            drawing.scale(scale, scale)
+            renderPM.drawToFile(drawing, png_path, fmt="PNG")
+
+        _RENDERER_CACHE["backend"] = "svglib"
+        _RENDERER_CACHE["render"] = _render_svglib
+        log.info("[cdp_to_pptx] SVG renderer: svglib + reportlab")
+        return "svglib", _render_svglib
+    except Exception as e:
+        _add_warning(
+            "svglib fallback unavailable: " + repr(e)
+            + ". Install with `pip install svglib reportlab pillow`."
+        )
+
+    _RENDERER_CACHE["error"] = "no_renderer"
+    _add_warning(
+        "No SVG renderer available; falling back to colored rectangles "
+        "for device icons."
+    )
+    return None, None
+
+
 def _ensure_png(svg_name: str, size: int = 512) -> Optional[str]:
     svg_path = os.path.join(ICON_DIR, svg_name)
     if not os.path.exists(svg_path):
+        _add_warning(f"Icon file not found: {svg_path}")
         return None
 
-    os.makedirs(CACHE_DIR, exist_ok=True)
-    base = os.path.splitext(os.path.basename(svg_name))[0]
-    png_path = os.path.join(CACHE_DIR, f"{base}_{size}.png")
+    backend, render = _get_renderer()
+    if backend is None:
+        return None
 
-    if not os.path.exists(png_path) or \
-       os.path.getmtime(png_path) < os.path.getmtime(svg_path):
+    try:
+        os.makedirs(CACHE_DIR, exist_ok=True)
+    except OSError as e:
+        _add_warning(f"Cannot create icon cache dir {CACHE_DIR}: {e}")
+        return None
+
+    base = os.path.splitext(os.path.basename(svg_name))[0]
+    png_path = os.path.join(CACHE_DIR, f"{base}_{backend}_{size}.png")
+
+    needs_render = (
+        not os.path.exists(png_path)
+        or os.path.getmtime(png_path) < os.path.getmtime(svg_path)
+    )
+    if needs_render:
         try:
-            import cairosvg  # type: ignore
-        except Exception:
-            return None
-        try:
-            cairosvg.svg2png(url=svg_path, write_to=png_path,
-                             output_width=size, output_height=size)
-        except Exception:
+            render(svg_path, png_path, size)
+        except Exception as e:
+            _add_warning(
+                f"Failed to render {svg_name} with {backend}: {e!r}"
+            )
             return None
     return png_path
 
@@ -590,6 +683,9 @@ def generate_pptx_from_cdp(text: str,
     if not text or not text.strip():
         return {"status": "error", "message": "No CDP input provided."}
 
+    # Reset per-call warning bucket.
+    _ICON_WARNINGS.clear()
+
     neighbors = parse_cdp_output(text)
     if not neighbors:
         return {"status": "error",
@@ -598,12 +694,16 @@ def generate_pptx_from_cdp(text: str,
     name = (local_name or "").strip() or _guess_local_name(text)
     build_presentation(name, neighbors, output_path)
 
+    backend = _RENDERER_CACHE.get("backend") or "none"
     return {
         "status": "success",
         "message": f"Generated PowerPoint with {len(neighbors)} neighbor(s).",
         "local_name": name,
         "neighbor_count": len(neighbors),
         "output_path": output_path,
+        "icon_dir": ICON_DIR,
+        "renderer": backend,
+        "warnings": list(_ICON_WARNINGS),
     }
 
 

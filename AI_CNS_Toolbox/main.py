@@ -11,6 +11,8 @@ import logging
 from ftp_backup_module import backup_device_config
 import tempfile
 import re
+import json
+import base64
 logging.basicConfig(level=logging.INFO)
 
 # Add the Self Written Scripts folder to path
@@ -359,7 +361,18 @@ def generate_cdp_pptx():
         )
         response.headers['X-Neighbor-Count'] = str(result.get('neighbor_count', 0))
         response.headers['X-Local-Name'] = result.get('local_name', '')
-        response.headers['Access-Control-Expose-Headers'] = 'X-Neighbor-Count, X-Local-Name'
+        response.headers['X-Renderer'] = result.get('renderer', 'none')
+        response.headers['X-Icon-Dir'] = result.get('icon_dir', '')
+        warnings = result.get('warnings') or []
+        if warnings:
+            # Use base64-encoded JSON so arbitrary text (paths, quotes,
+            # newlines) survives HTTP header encoding cleanly.
+            response.headers['X-Warnings-B64'] = base64.b64encode(
+                json.dumps(warnings).encode('utf-8')
+            ).decode('ascii')
+        response.headers['Access-Control-Expose-Headers'] = (
+            'X-Neighbor-Count, X-Local-Name, X-Renderer, X-Icon-Dir, X-Warnings-B64'
+        )
         return response
 
     except Exception as e:
