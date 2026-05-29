@@ -6,3 +6,9 @@ pyperclip==1.8.2
 genie==23.8
 pyats==23.8
 pandas
+python-pptx>=0.6.21
+# Optional: enables rendering of the Cisco SVG icons placed in
+# "Self Written Scripts/CDP_to_PPTX/Cisco ICONS". On macOS the Cairo
+# native library must also be installed via `brew install cairo`.
+# If unavailable, the CDP-to-PPTX script falls back to colored shapes.
+cairosvg>=2.7.0

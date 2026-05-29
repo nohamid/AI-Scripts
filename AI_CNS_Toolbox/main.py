@@ -9,17 +9,22 @@ from functools import wraps
 from pathlib import Path
 import logging
 from ftp_backup_module import backup_device_config
+import tempfile
+import re
 logging.basicConfig(level=logging.INFO)
 
 # Add the Self Written Scripts folder to path
 config_gen_script_path = Path(__file__).parent / 'Self Written Scripts' / 'Config Generator' / 'main.py'
 cns_healthcheck_script_path = Path(__file__).parent / 'Self Written Scripts' / 'CNS_Healthcheck'
+cdp_to_pptx_script_path = Path(__file__).parent / 'Self Written Scripts' / 'CDP_to_PPTX'
 
 # Add CNS Health Check to path for imports
 sys.path.insert(0, str(cns_healthcheck_script_path))
+sys.path.insert(0, str(cdp_to_pptx_script_path))
 
 # Import the healthcheck function
 from healtcheck import run_cns_healthcheck
+from cdp_to_pptx import generate_pptx_from_cdp
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'your-secret-key-change-this'
@@ -48,6 +53,11 @@ AVAILABLE_SCRIPTS = {
         'name': 'CNS Health Check',
         'description': 'Run health check on a range of Cisco CNS Lab devices',
         'icon': '🏥'
+    },
+    'cdp_to_pptx': {
+        'name': 'CDP to PowerPoint',
+        'description': 'Paste `show cdp neighbors detail` output and download a topology + matrix PowerPoint',
+        'icon': '📝'
     },
     'device_inventory': {
         'name': 'Device Inventory',
@@ -296,6 +306,68 @@ with patch('builtins.input', side_effect=inputs):
     }
     
     return jsonify(result)
+
+@app.route('/generate-cdp-pptx', methods=['POST'])
+@login_required
+def generate_cdp_pptx():
+    """Parse pasted CDP output and stream back a generated .pptx file."""
+    try:
+        data = request.get_json(silent=True) or {}
+        cdp_text = (data.get('cdp_output') or '').strip()
+        local_name = (data.get('local_name') or '').strip() or None
+
+        if not cdp_text:
+            return jsonify({
+                'status': 'error',
+                'message': 'CDP output is required.'
+            }), 400
+
+        tmp = tempfile.NamedTemporaryFile(
+            prefix='cdp_topology_', suffix='.pptx', delete=False)
+        tmp.close()
+
+        try:
+            result = generate_pptx_from_cdp(
+                cdp_text, tmp.name, local_name=local_name)
+        except Exception as exc:
+            try:
+                os.remove(tmp.name)
+            except OSError:
+                pass
+            return jsonify({
+                'status': 'error',
+                'message': f'Failed to generate PowerPoint: {exc}'
+            }), 500
+
+        if result.get('status') != 'success':
+            try:
+                os.remove(tmp.name)
+            except OSError:
+                pass
+            return jsonify(result), 400
+
+        safe_name = re.sub(r'[^A-Za-z0-9._-]+', '_',
+                           result.get('local_name') or 'device')
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        download_name = f'CDP_Topology_{safe_name}_{timestamp}.pptx'
+
+        response = send_file(
+            tmp.name,
+            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            as_attachment=True,
+            download_name=download_name,
+        )
+        response.headers['X-Neighbor-Count'] = str(result.get('neighbor_count', 0))
+        response.headers['X-Local-Name'] = result.get('local_name', '')
+        response.headers['Access-Control-Expose-Headers'] = 'X-Neighbor-Count, X-Local-Name'
+        return response
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Unexpected error: {str(e)}'
+        }), 500
+
 
 @app.route('/logout')
 def logout():

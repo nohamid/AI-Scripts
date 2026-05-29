@@ -1115,6 +1115,44 @@
         </div>
     </div>
 
+    <!-- CDP to PPTX Modal -->
+    <div id="cdpToPptxModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>
+                    <span class="material-icons-round">slideshow</span>
+                    <span id="cdpToPptxModalTitle">CDP to PowerPoint</span>
+                </h2>
+                <button class="close-btn" onclick="closeCdpToPptxModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                    Paste the full output of <code>show cdp neighbors detail</code> below.
+                    A PowerPoint file with a topology diagram and a connectivity matrix
+                    will be generated and downloaded automatically.
+                </p>
+                <div class="form-group">
+                    <label>Local Device Name <span style="color: var(--md-on-surface-variant); font-weight: 400;">(optional)</span></label>
+                    <input type="text" id="cdpLocalNameInput" placeholder="Auto-detected from the CLI prompt if left empty">
+                    <p class="form-hint">Used as the label for the center device in the topology diagram</p>
+                </div>
+                <div class="form-group">
+                    <label>CDP Output</label>
+                    <textarea id="cdpOutputInput" class="config-textarea" style="height: 280px; font-family: 'Roboto Mono', monospace; font-size: 12px;" placeholder="-------------------------&#10;Device ID: SW-CORE-01&#10;Entry address(es):&#10;  IP address: 10.10.10.1&#10;Platform: cisco WS-C3850-24T, Capabilities: Router Switch IGMP&#10;Interface: GigabitEthernet1/0/1,  Port ID (outgoing port): GigabitEthernet1/0/24&#10;..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCdpToPptxModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitCdpToPptx()">
+                    <span class="material-icons-round" style="font-size: 18px;">download</span>
+                    Generate &amp; Download
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
         <div class="modal-content large">
@@ -1179,6 +1217,10 @@
             }
             if (scriptId === 'cns_healthcheck') {
                 showCnsHealthcheckModal(scriptId, scriptName);
+                return;
+            }
+            if (scriptId === 'cdp_to_pptx') {
+                showCdpToPptxModal(scriptId, scriptName);
                 return;
             }
 
@@ -1315,6 +1357,77 @@
             .catch(error => {
                 hideLoadingOverlay();
                 showResultModal({ status: 'error', message: 'An error occurred: ' + error.message }, 'CNS Health Check');
+            });
+        }
+
+        function showCdpToPptxModal(scriptId, scriptName) {
+            document.getElementById('cdpToPptxModalTitle').textContent = scriptName;
+            document.getElementById('cdpToPptxModal').classList.add('show');
+            setTimeout(() => document.getElementById('cdpOutputInput').focus(), 50);
+        }
+
+        function closeCdpToPptxModal() {
+            document.getElementById('cdpToPptxModal').classList.remove('show');
+        }
+
+        function submitCdpToPptx() {
+            const cdpText = document.getElementById('cdpOutputInput').value;
+            const localName = document.getElementById('cdpLocalNameInput').value.trim();
+            if (!cdpText.trim()) {
+                alert('Please paste the output of `show cdp neighbors detail`.');
+                return;
+            }
+            closeCdpToPptxModal();
+            showLoadingOverlay();
+
+            fetch('{{ url_for("generate_cdp_pptx") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cdp_output: cdpText, local_name: localName })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    let msg = 'Failed to generate PowerPoint.';
+                    try {
+                        const err = await response.json();
+                        if (err && err.message) msg = err.message;
+                    } catch (_) { /* not JSON */ }
+                    throw new Error(msg);
+                }
+                const neighborCount = response.headers.get('X-Neighbor-Count') || '?';
+                const localNameOut = response.headers.get('X-Local-Name') || '';
+                const disposition = response.headers.get('Content-Disposition') || '';
+                let filename = 'cdp_topology.pptx';
+                const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^;"']+)/i);
+                if (match) filename = decodeURIComponent(match[1].replace(/"/g, ''));
+                const blob = await response.blob();
+                return { blob, filename, neighborCount, localNameOut };
+            })
+            .then(({ blob, filename, neighborCount, localNameOut }) => {
+                hideLoadingOverlay();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showResultModal({
+                    status: 'success',
+                    message: `PowerPoint generated and downloaded (${neighborCount} neighbor entr${neighborCount === '1' ? 'y' : 'ies'}` +
+                             (localNameOut ? `, local device: ${localNameOut}` : '') + ').',
+                    filename: filename,
+                    timestamp: new Date().toISOString()
+                }, 'CDP to PowerPoint');
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                showResultModal({
+                    status: 'error',
+                    message: error.message || 'An error occurred while generating the PowerPoint.'
+                }, 'CDP to PowerPoint');
             });
         }
 
@@ -1494,7 +1607,7 @@
         }
 
         // Close modals on backdrop click
-        ['resultModal', 'deviceInputModal', 'configGeneratorModal', 'cnsHealthcheckModal'].forEach(id => {
+        ['resultModal', 'deviceInputModal', 'configGeneratorModal', 'cnsHealthcheckModal', 'cdpToPptxModal'].forEach(id => {
             document.getElementById(id).addEventListener('click', function(e) {
                 if (e.target === this) {
                     this.classList.remove('show');
