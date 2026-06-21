@@ -691,8 +691,16 @@ def generate_pptx_from_cdp(text: str,
     if not text or not text.strip():
         return {"status": "error", "message": "No CDP input provided."}
 
-    # Reset per-call warning bucket.
+    # Reset per-call state so newly installed renderers are picked up
+    # without restarting the Flask process.
     _ICON_WARNINGS.clear()
+    _RENDERER_CACHE["backend"] = None
+    _RENDERER_CACHE["render"] = None
+    _RENDERER_CACHE["error"] = None
+
+    # Also re-resolve the icon directory in case it was added after import.
+    global ICON_DIR
+    ICON_DIR = _resolve_icon_dir()
 
     neighbors = parse_cdp_output(text)
     if not neighbors:

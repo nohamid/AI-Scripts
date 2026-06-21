@@ -9,10 +9,13 @@ from functools import wraps
 from pathlib import Path
 import logging
 from ftp_backup_module import backup_device_config
+from scp_upload_module import upload_ios_image, DEFAULT_DESTINATIONS
 import tempfile
 import re
 import json
 import base64
+import threading
+import time as _time
 logging.basicConfig(level=logging.INFO)
 
 # Add the Self Written Scripts folder to path
@@ -34,6 +37,28 @@ app.secret_key = 'your-secret-key-change-this'
 # Performance: Configure Flask for better performance
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # Cache static files for 1 year
 app.config['JSON_SORT_KEYS'] = False  # Faster JSON serialization
+# Cisco IOS images can be very large (multi-GB). Allow up to 4 GB uploads.
+app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024 * 1024
+
+# In-memory store of in-flight IOS upload progress keyed by upload_id.
+# Each entry: {phase, percent, total_sent, total_size, current_file, rate_bps, updated}
+IOS_UPLOAD_PROGRESS: dict = {}
+IOS_UPLOAD_PROGRESS_LOCK = threading.Lock()
+
+def _set_ios_progress(upload_id: str, data: dict) -> None:
+    if not upload_id:
+        return
+    with IOS_UPLOAD_PROGRESS_LOCK:
+        existing = IOS_UPLOAD_PROGRESS.get(upload_id, {})
+        existing.update(data)
+        existing['updated'] = _time.time()
+        IOS_UPLOAD_PROGRESS[upload_id] = existing
+
+def _schedule_ios_progress_cleanup(upload_id: str, delay: float = 60.0) -> None:
+    def _clean():
+        with IOS_UPLOAD_PROGRESS_LOCK:
+            IOS_UPLOAD_PROGRESS.pop(upload_id, None)
+    threading.Timer(delay, _clean).start()
 
 # Authentication credentials
 VALID_USERNAME = 'admin'
@@ -60,6 +85,11 @@ AVAILABLE_SCRIPTS = {
         'name': 'CDP to PowerPoint',
         'description': 'Paste `show cdp neighbors detail` output and download a topology + matrix PowerPoint',
         'icon': '📝'
+    },
+    'ios_upload': {
+        'name': 'IOS Image Upload',
+        'description': 'Upload a Cisco IOS image from your local machine to a lab device via SCP',
+        'icon': '💿'
     },
     'device_inventory': {
         'name': 'Device Inventory',
@@ -380,6 +410,152 @@ def generate_cdp_pptx():
             'status': 'error',
             'message': f'Unexpected error: {str(e)}'
         }), 500
+
+
+@app.route('/upload-ios', methods=['POST'])
+@login_required
+def upload_ios():
+    """Receive IOS image file(s) from the browser and SCP them to a Cisco device."""
+    temp_paths: list[str] = []
+    upload_id = (request.form.get('upload_id') or '').strip()
+    try:
+        host = (request.form.get('device_ip') or '').strip()
+        port_raw = (request.form.get('port') or '22').strip()
+        username = (request.form.get('username') or '').strip()
+        password = request.form.get('password') or ''
+        destination = (request.form.get('destination') or 'flash:/').strip()
+
+        if not host or not username or not password:
+            return jsonify({
+                'status': 'error',
+                'message': 'Device IP, SSH username, and password are required.'
+            }), 400
+
+        try:
+            port = int(port_raw)
+            if not (1 <= port <= 65535):
+                raise ValueError
+        except ValueError:
+            return jsonify({
+                'status': 'error',
+                'message': 'SSH port must be an integer between 1 and 65535.'
+            }), 400
+
+        uploaded = request.files.getlist('files')
+        if not uploaded:
+            return jsonify({
+                'status': 'error',
+                'message': 'At least one IOS image file is required.'
+            }), 400
+
+        # Persist each uploaded stream to a temp file using the original
+        # client filename so SCP places it at <destination>/<filename>.
+        local_files: list[str] = []
+        upload_dir = tempfile.mkdtemp(prefix='ios_upload_')
+        for storage in uploaded:
+            if not storage or not storage.filename:
+                continue
+            safe_name = os.path.basename(storage.filename)
+            safe_name = re.sub(r'[^A-Za-z0-9._-]+', '_', safe_name)
+            if not safe_name:
+                continue
+            local_path = os.path.join(upload_dir, safe_name)
+            storage.save(local_path)
+            local_files.append(local_path)
+            temp_paths.append(local_path)
+
+        if not local_files:
+            return jsonify({
+                'status': 'error',
+                'message': 'No valid files were received from the browser.'
+            }), 400
+
+        # Seed an initial progress entry so the first poll sees something.
+        if upload_id:
+            _set_ios_progress(upload_id, {
+                'phase': 'connecting',
+                'percent': 0.0,
+                'total_sent': 0,
+                'total_size': sum(os.path.getsize(p) for p in local_files),
+                'current_file': '',
+                'rate_bps': 0.0,
+            })
+
+        def _progress_cb(p):
+            _set_ios_progress(upload_id, {'phase': 'uploading', **p})
+
+        result = upload_ios_image(
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            files=local_files,
+            destination=destination,
+            progress_callback=_progress_cb if upload_id else None,
+        )
+
+        if upload_id:
+            _set_ios_progress(upload_id, {
+                'phase': 'done',
+                'percent': 100.0 if result['status'] == 'success' else None,
+                'final_status': result['status'],
+            })
+            _schedule_ios_progress_cleanup(upload_id, delay=60.0)
+
+        return jsonify({
+            'status': result['status'],
+            'script': 'IOS Image Upload',
+            'message': result['message'],
+            'host': host,
+            'port': port,
+            'destination': destination,
+            'results': result['results'],
+            'timestamp': datetime.now().isoformat()
+        }), (200 if result['status'] == 'success' else 400)
+
+    except Exception as e:
+        if upload_id:
+            _set_ios_progress(upload_id, {
+                'phase': 'done',
+                'final_status': 'error',
+                'error': str(e),
+            })
+            _schedule_ios_progress_cleanup(upload_id, delay=60.0)
+        return jsonify({
+            'status': 'error',
+            'message': f'IOS upload failed: {str(e)}'
+        }), 500
+
+    finally:
+        # Best-effort cleanup of the temp files and parent dir.
+        for tp in temp_paths:
+            try:
+                os.remove(tp)
+            except OSError:
+                pass
+        try:
+            if temp_paths:
+                os.rmdir(os.path.dirname(temp_paths[0]))
+        except OSError:
+            pass
+
+
+@app.route('/upload-ios-progress/<upload_id>', methods=['GET'])
+@login_required
+def upload_ios_progress(upload_id):
+    with IOS_UPLOAD_PROGRESS_LOCK:
+        data = IOS_UPLOAD_PROGRESS.get(upload_id)
+    if data is None:
+        return jsonify({'phase': 'unknown'}), 200
+    return jsonify(data), 200
+
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    return jsonify({
+        'status': 'error',
+        'message': 'The uploaded file is too large. Maximum size is 4 GB.'
+    }), 413
 
 
 @app.route('/logout')

@@ -1153,6 +1153,101 @@
         </div>
     </div>
 
+    <!-- IOS Image Upload Modal -->
+    <div id="iosUploadModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>
+                    <span class="material-icons-round">cloud_upload</span>
+                    <span id="iosUploadModalTitle">IOS Image Upload</span>
+                </h2>
+                <button class="close-btn" onclick="closeIosUploadModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                    Upload a Cisco IOS image file from your local machine to a lab
+                    device via SCP. The device must have <code>ip scp server enable</code>
+                    and <code>ip ssh version 2</code> configured, and the SSH user must
+                    have privilege 15.
+                </p>
+
+                <div class="form-group">
+                    <label>IOS Image File(s)</label>
+                    <input type="file" id="iosFileInput" multiple
+                           accept=".bin,.SPA,.spa,.tar,.pkg,.conf,.cfg">
+                    <p class="form-hint" id="iosFileHint">Select one or more files (.bin, .SPA, .tar, .pkg)</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Device IP Address or Hostname</label>
+                    <input type="text" id="iosHostInput" placeholder="e.g., 10.10.10.1">
+                </div>
+
+                <div class="form-group">
+                    <label>SSH Port</label>
+                    <input type="number" id="iosPortInput" value="22" min="1" max="65535">
+                </div>
+
+                <div class="form-group">
+                    <label>SSH Username</label>
+                    <input type="text" id="iosUsernameInput" placeholder="admin" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label>SSH Password</label>
+                    <input type="password" id="iosPasswordInput" autocomplete="current-password">
+                </div>
+
+                <div class="form-group">
+                    <label>Remote Destination</label>
+                    <select id="iosDestinationSelect">
+                        <option value="flash:/" selected>flash:/</option>
+                        <option value="bootflash:/">bootflash:/</option>
+                        <option value="disk0:/">disk0:/</option>
+                        <option value="usbflash0:/">usbflash0:/</option>
+                        <option value="harddisk:/">harddisk:/</option>
+                        <option value="__custom__">Custom path…</option>
+                    </select>
+                    <input type="text" id="iosDestinationCustom"
+                           placeholder="e.g., bootflash:/images/"
+                           style="margin-top: 8px; display: none;">
+                    <p class="form-hint">Most routers/switches use flash:/ or bootflash:/</p>
+                </div>
+
+                <div id="iosUploadProgress" style="display: none; margin-top: 16px;">
+                    <p style="font-weight: 600; margin-bottom: 8px;">
+                        <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">sync</span>
+                        Browser → Server upload progress
+                    </p>
+                    <div style="width: 100%; height: 8px; background: var(--md-surface-container-high); border-radius: 4px; overflow: hidden;">
+                        <div id="iosUploadProgressBar" style="height: 100%; width: 0%; background: var(--md-primary); transition: width 0.2s ease;"></div>
+                    </div>
+                    <p id="iosUploadProgressText" class="form-hint" style="margin-top: 6px;">0%</p>
+
+                    <div id="iosDeviceProgressWrap" style="display: none; margin-top: 16px;">
+                        <p style="font-weight: 600; margin-bottom: 8px;">
+                            <span class="material-icons-round" style="font-size: 16px; vertical-align: middle;">router</span>
+                            Server → Device (SCP) progress
+                        </p>
+                        <div style="width: 100%; height: 8px; background: var(--md-surface-container-high); border-radius: 4px; overflow: hidden;">
+                            <div id="iosDeviceProgressBar" style="height: 100%; width: 0%; background: var(--md-success, #34a853); transition: width 0.2s ease;"></div>
+                        </div>
+                        <p id="iosDeviceProgressText" class="form-hint" style="margin-top: 6px;">Waiting for device transfer to start…</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeIosUploadModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="submitIosUpload()" id="iosUploadSubmitBtn">
+                    <span class="material-icons-round" style="font-size: 18px;">cloud_upload</span>
+                    Upload to Device
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
         <div class="modal-content large">
@@ -1221,6 +1316,10 @@
             }
             if (scriptId === 'cdp_to_pptx') {
                 showCdpToPptxModal(scriptId, scriptName);
+                return;
+            }
+            if (scriptId === 'ios_upload') {
+                showIosUploadModal(scriptId, scriptName);
                 return;
             }
 
@@ -1449,6 +1548,194 @@
             });
         }
 
+        function showIosUploadModal(scriptId, scriptName) {
+            document.getElementById('iosUploadModalTitle').textContent = scriptName;
+            document.getElementById('iosUploadModal').classList.add('show');
+            // Reset progress UI
+            document.getElementById('iosUploadProgress').style.display = 'none';
+            document.getElementById('iosUploadProgressBar').style.width = '0%';
+            document.getElementById('iosUploadProgressText').textContent = '0%';
+            document.getElementById('iosDeviceProgressWrap').style.display = 'none';
+            document.getElementById('iosDeviceProgressBar').style.width = '0%';
+            document.getElementById('iosDeviceProgressText').textContent = 'Waiting for device transfer to start…';
+            document.getElementById('iosUploadSubmitBtn').disabled = false;
+            setTimeout(() => document.getElementById('iosFileInput').focus(), 50);
+        }
+
+        function closeIosUploadModal() {
+            document.getElementById('iosUploadModal').classList.remove('show');
+            document.getElementById('iosFileInput').value = '';
+            document.getElementById('iosHostInput').value = '';
+            document.getElementById('iosUsernameInput').value = '';
+            document.getElementById('iosPasswordInput').value = '';
+            document.getElementById('iosPortInput').value = '22';
+            document.getElementById('iosDestinationSelect').value = 'flash:/';
+            document.getElementById('iosDestinationCustom').style.display = 'none';
+            document.getElementById('iosDestinationCustom').value = '';
+            document.getElementById('iosFileHint').textContent = 'Select one or more files (.bin, .SPA, .tar, .pkg)';
+        }
+
+        let _iosDevicePollTimer = null;
+        function _stopIosDevicePolling() {
+            if (_iosDevicePollTimer) {
+                clearInterval(_iosDevicePollTimer);
+                _iosDevicePollTimer = null;
+            }
+        }
+        function _startIosDevicePolling(uploadId) {
+            _stopIosDevicePolling();
+            const bar = document.getElementById('iosDeviceProgressBar');
+            const text = document.getElementById('iosDeviceProgressText');
+            document.getElementById('iosDeviceProgressWrap').style.display = 'block';
+            const tick = () => {
+                fetch('/upload-ios-progress/' + encodeURIComponent(uploadId), {
+                    cache: 'no-store',
+                    credentials: 'same-origin',
+                })
+                .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+                .then(p => {
+                    if (!p) return;
+                    if (p.phase === 'unknown') {
+                        text.textContent = 'Waiting for server to begin SCP transfer…';
+                        return;
+                    }
+                    if (p.phase === 'connecting') {
+                        text.textContent = 'Connecting to device…';
+                        return;
+                    }
+                    if (p.phase === 'done') {
+                        bar.style.width = '100%';
+                        const ok = (p.final_status === 'success');
+                        text.textContent = ok
+                            ? 'Device transfer complete.'
+                            : 'Device transfer finished with errors.';
+                        _stopIosDevicePolling();
+                        return;
+                    }
+                    // phase === 'uploading'
+                    const pct = (typeof p.percent === 'number') ? p.percent : 0;
+                    bar.style.width = pct.toFixed(1) + '%';
+                    const sent = formatBytes(p.total_sent || 0);
+                    const total = formatBytes(p.total_size || 0);
+                    const rate = formatBytes(p.rate_bps || 0) + '/s';
+                    const cur = p.current_file ? '  —  ' + p.current_file : '';
+                    text.textContent = pct.toFixed(1) + '%  (' + sent + ' / ' + total + ', ' + rate + ')' + cur;
+                })
+                .catch(err => {
+                    // Surface progress endpoint problems (e.g. 404 because
+                    // the server was not restarted after adding the route).
+                    text.textContent = 'Progress endpoint unavailable: ' + err.message;
+                });
+            };
+            tick();
+            _iosDevicePollTimer = setInterval(tick, 750);
+        }
+
+        function submitIosUpload() {
+            const fileInput = document.getElementById('iosFileInput');
+            const host = document.getElementById('iosHostInput').value.trim();
+            const port = document.getElementById('iosPortInput').value.trim() || '22';
+            const username = document.getElementById('iosUsernameInput').value.trim();
+            const password = document.getElementById('iosPasswordInput').value;
+            const destSelect = document.getElementById('iosDestinationSelect').value;
+            const destCustom = document.getElementById('iosDestinationCustom').value.trim();
+            const destination = destSelect === '__custom__' ? destCustom : destSelect;
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select at least one IOS image file.');
+                return;
+            }
+            if (!host) { alert('Please enter the device IP or hostname.'); return; }
+            if (!username) { alert('Please enter the SSH username.'); return; }
+            if (!password) { alert('Please enter the SSH password.'); return; }
+            if (!destination) { alert('Please choose or type a remote destination.'); return; }
+
+            const formData = new FormData();
+            for (const f of fileInput.files) {
+                formData.append('files', f, f.name);
+            }
+            formData.append('device_ip', host);
+            formData.append('port', port);
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('destination', destination);
+
+            // Generate a unique id so the server can publish SCP progress
+            // for *this* upload and the browser can poll it.
+            const uploadId = (window.crypto && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : ('u-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+            formData.append('upload_id', uploadId);
+
+            const progressWrap = document.getElementById('iosUploadProgress');
+            const progressBar = document.getElementById('iosUploadProgressBar');
+            const progressText = document.getElementById('iosUploadProgressText');
+            const submitBtn = document.getElementById('iosUploadSubmitBtn');
+            progressWrap.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            // Show the Server→Device bar immediately so users see it during
+            // the upload, then start polling. The polling endpoint will
+            // return phase='unknown' until the server begins SCP, at which
+            // point the bar starts moving.
+            document.getElementById('iosDeviceProgressWrap').style.display = 'block';
+            document.getElementById('iosDeviceProgressBar').style.width = '0%';
+            document.getElementById('iosDeviceProgressText').textContent =
+                'Waiting for browser → server upload to finish before SCP starts…';
+            submitBtn.disabled = true;
+            _startIosDevicePolling(uploadId);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '{{ url_for("upload_ios") }}', true);
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const pct = (e.loaded / e.total) * 100;
+                    progressBar.style.width = pct.toFixed(1) + '%';
+                    progressText.textContent =
+                        pct.toFixed(1) + '%  (' + formatBytes(e.loaded) + ' / ' + formatBytes(e.total) + ')';
+                }
+            };
+            const _onUploadDone = function() {
+                progressText.textContent =
+                    '100% — server is now copying the file(s) to the device via SCP…';
+                // Polling is already running, but make sure it is.
+                _startIosDevicePolling(uploadId);
+            };
+            xhr.upload.onload = _onUploadDone;
+            xhr.upload.onloadend = _onUploadDone;
+            xhr.onload = function() {
+                submitBtn.disabled = false;
+                _stopIosDevicePolling();
+                let data;
+                try {
+                    data = JSON.parse(xhr.responseText);
+                } catch (_) {
+                    data = { status: 'error', message: 'Unexpected response from server.' };
+                }
+                closeIosUploadModal();
+                showResultModal(data, 'IOS Image Upload');
+            };
+            xhr.onerror = function() {
+                submitBtn.disabled = false;
+                _stopIosDevicePolling();
+                closeIosUploadModal();
+                showResultModal({
+                    status: 'error',
+                    message: 'Network error while uploading to the server.'
+                }, 'IOS Image Upload');
+            };
+            xhr.send(formData);
+        }
+
+        function formatBytes(bytes) {
+            if (!bytes || bytes < 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let i = 0;
+            let v = bytes;
+            while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+            return v.toFixed(v >= 100 || i === 0 ? 0 : 1) + ' ' + units[i];
+        }
+
         function showResultModal(data, scriptName) {
             document.getElementById('modalTitle').textContent = scriptName;
             const resultMessageDiv = document.getElementById('resultMessage');
@@ -1583,6 +1870,68 @@
                 `;
             }
             
+            if (Array.isArray(data.results) && data.results.length && (data.host || data.destination)) {
+                let okRows = 0;
+                let failRows = 0;
+                for (const r of data.results) {
+                    if (r.status === 'success') okRows++; else failRows++;
+                }
+                detailsHtml += `
+                    <div style="margin-top: 20px;">
+                        <div style="display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;">
+                            <div class="meta-chip" style="background: var(--md-surface-container); color: var(--md-on-surface);">
+                                <span class="material-icons-round" style="font-size: 16px;">router</span>
+                                ${data.host || ''}${data.port ? ':' + data.port : ''}
+                            </div>
+                            <div class="meta-chip" style="background: var(--md-surface-container); color: var(--md-on-surface);">
+                                <span class="material-icons-round" style="font-size: 16px;">folder</span>
+                                ${data.destination || ''}
+                            </div>
+                            <div class="meta-chip" style="background: var(--md-success-container); color: var(--md-success);">
+                                <span class="material-icons-round" style="font-size: 16px;">check_circle</span>
+                                ${okRows} uploaded
+                            </div>
+                            <div class="meta-chip" style="background: var(--md-error-container); color: var(--md-error);">
+                                <span class="material-icons-round" style="font-size: 16px;">error</span>
+                                ${failRows} failed
+                            </div>
+                        </div>
+                        <div class="data-table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Filename</th>
+                                        <th>Remote Target</th>
+                                        <th>Size</th>
+                                        <th>Elapsed (s)</th>
+                                        <th>Status</th>
+                                        <th>Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+                for (const r of data.results) {
+                    const statusClass = r.status === 'success' ? 'status-success' : 'status-error';
+                    const statusIcon = r.status === 'success' ? 'check' : 'close';
+                    detailsHtml += `
+                        <tr>
+                            <td>${r.filename || ''}</td>
+                            <td><code>${r.remote_target || ''}</code></td>
+                            <td>${formatBytes(r.size_bytes || 0)}</td>
+                            <td>${r.elapsed_seconds != null ? r.elapsed_seconds : ''}</td>
+                            <td><span class="status-badge ${statusClass}"><span class="material-icons-round" style="font-size: 14px;">${statusIcon}</span></span></td>
+                            <td>${r.error ? r.error.replace(/</g, '&lt;') : ''}</td>
+                        </tr>
+                    `;
+                }
+                detailsHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
             if (data.timestamp) {
                 detailsHtml += `<p style="margin-top: 20px; color: var(--md-on-surface-variant); font-size: 13px;">Executed at: ${new Date(data.timestamp).toLocaleString()}</p>`;
             }
@@ -1641,7 +1990,7 @@
         }
 
         // Close modals on backdrop click
-        ['resultModal', 'deviceInputModal', 'configGeneratorModal', 'cnsHealthcheckModal', 'cdpToPptxModal'].forEach(id => {
+        ['resultModal', 'deviceInputModal', 'configGeneratorModal', 'cnsHealthcheckModal', 'cdpToPptxModal', 'iosUploadModal'].forEach(id => {
             document.getElementById(id).addEventListener('click', function(e) {
                 if (e.target === this) {
                     this.classList.remove('show');
@@ -1653,6 +2002,36 @@
         document.getElementById('deviceIpInput').addEventListener('keypress', e => { if (e.key === 'Enter') submitDeviceBackup(); });
         document.getElementById('ipInput').addEventListener('keypress', e => { if (e.key === 'Enter') submitConfigGenerator(); });
         document.getElementById('ipRangeInput').addEventListener('keypress', e => { if (e.key === 'Enter') submitCnsHealthcheck(); });
+
+        // Toggle custom destination input for IOS upload
+        document.getElementById('iosDestinationSelect').addEventListener('change', function() {
+            const custom = document.getElementById('iosDestinationCustom');
+            if (this.value === '__custom__') {
+                custom.style.display = 'block';
+                custom.focus();
+            } else {
+                custom.style.display = 'none';
+            }
+        });
+
+        // Show selected file summary in the IOS upload modal
+        document.getElementById('iosFileInput').addEventListener('change', function() {
+            const hint = document.getElementById('iosFileHint');
+            if (!this.files || this.files.length === 0) {
+                hint.textContent = 'Select one or more files (.bin, .SPA, .tar, .pkg)';
+                return;
+            }
+            let total = 0;
+            const names = [];
+            for (const f of this.files) {
+                total += f.size;
+                names.push(f.name);
+            }
+            const label = names.length === 1
+                ? names[0]
+                : names.length + ' files selected';
+            hint.textContent = label + '  —  total ' + formatBytes(total);
+        });
     </script>
 </body>
 </html>
