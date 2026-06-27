@@ -154,6 +154,11 @@ def dashboard():
 def pdu_management():
     return render_template('pdu_management.html')
 
+@app.route('/floorplan')
+@login_required
+def floorplan():
+    return render_template('floorplan.html')
+
 @app.route('/run-script/<script_id>', methods=['POST'])
 @login_required
 def run_script(script_id):

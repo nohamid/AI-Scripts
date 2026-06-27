@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNS Lab Eschborn Floorplan - CNS Skynet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Cisco Catalyst SD-WAN Manager Palette */
+            --cisco-header: #1c1d2b;
+            --cisco-blue: #0d6ca3;
+            --cisco-blue-hover: #0b5d8c;
+            --cisco-blue-soft: #e3f0f8;
+            --navbar-height: 64px;
+
+            --bg-card: #ffffff;
+            --surface-dim: #f5f6f8;
+            --text-primary: #23232d;
+            --text-secondary: #6c6c78;
+            --text-light: #93939d;
+            --border-color: #e1e3e8;
+            --accent-blue: #0d6ca3;
+
+            /* Rack category colours */
+            --cat-bwi: #1a6fc4;
+            --cat-ucs: #2f8f3e;
+            --cat-itz: #ef8a17;
+            --cat-sdwan: #8324a8;
+            --cat-test: #566472;
+            --cat-bdbos: #cc2222;
+            --cat-bench: #ab8d7c;
+            --room-fill: #dbe7f5;
+            --room-border: #6c9bd2;
+        }
+
+        body.dark-mode {
+            --cisco-blue-soft: rgba(58, 155, 214, 0.14);
+            --cisco-blue-hover: #2b82bb;
+            --bg-card: #24252f;
+            --surface-dim: #1b1c26;
+            --text-primary: #e6e7eb;
+            --text-secondary: #9a9ba6;
+            --text-light: #7c7d88;
+            --border-color: #33343f;
+            --accent-blue: #3a9bd6;
+            --room-fill: #1f2738;
+            --room-border: #3a557d;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--surface-dim);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Top Navigation Bar - Cisco Catalyst SD-WAN style */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height);
+            background: var(--cisco-header);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 200;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .cisco-logo {
+            display: inline-flex;
+            align-items: center;
+            color: #ffffff;
+            height: 34px;
+        }
+
+        .cisco-logo svg {
+            height: 34px;
+            width: auto;
+            display: block;
+        }
+
+        .brand-divider {
+            width: 1px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.22);
+            margin: 0 4px;
+        }
+
+        .brand-text {
+            color: #ffffff;
+            font-weight: 400;
+            font-size: 17px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: #c2c4cf;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.07);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--cisco-blue);
+            border-color: var(--cisco-blue);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: calc(var(--navbar-height) + 28px) 36px 28px;
+        }
+
+        .page-header {
+            background: var(--bg-card);
+            padding: 22px 28px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--cisco-blue);
+            box-shadow: 0 1px 2px rgba(28, 29, 43, 0.06);
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Floorplan layout */
+        .floor-layout {
+            display: block;
+        }
+
+        .floor-canvas {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 1px 2px rgba(28, 29, 43, 0.06);
+        }
+
+        .floor-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 20px;
+        }
+
+        .room {
+            position: relative;
+            background: var(--room-fill);
+            border: 3px solid var(--room-border);
+            border-radius: 6px;
+            padding: 52px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .rack-rows {
+            display: flex;
+            justify-content: space-around;
+            gap: 32px;
+        }
+
+        /* Entry door */
+        .entry-label {
+            position: absolute;
+            top: 64px;
+            left: -2px;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        /* Door swing symbol: vertical leaf + quarter-circle arc */
+        .entry-door {
+            position: absolute;
+            top: 14px;
+            left: 16px;
+            width: 40px;
+            height: 40px;
+            border-bottom: 2px solid var(--cisco-blue);
+            border-right: 2px solid var(--cisco-blue);
+            border-bottom-right-radius: 100%;
+        }
+
+        .entry-door::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 40px;
+            background: var(--cisco-blue);
+        }
+
+        .rack-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+            max-width: 150px;
+        }
+
+        .row-label {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .rack {
+            border-radius: 4px;
+            padding: 12px 8px;
+            text-align: center;
+            color: #ffffff;
+            line-height: 1.25;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+        }
+
+        .rack .rack-no {
+            font-size: 15px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .rack .rack-tag {
+            font-size: 10px;
+            font-weight: 600;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .rack.bwi   { background: var(--cat-bwi); }
+        .rack.ucs   { background: var(--cat-ucs); }
+        .rack.itz   { background: var(--cat-itz); }
+        .rack.sdwan { background: var(--cat-sdwan); }
+        .rack.test  { background: var(--cat-test); }
+        .rack.bdbos { background: var(--cat-bdbos); }
+        .rack.spare {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        /* Work benches (inside room) */
+        .benches {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 16px 8px 0;
+            border-top: 2px dashed var(--room-border);
+        }
+
+        .bench-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .bench {
+            width: 54px;
+            height: 30px;
+            background: var(--cat-bench);
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        }
+
+        .table-box {
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border-radius: 4px;
+            padding: 10px 22px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Side column: legend + project info */
+        .side-col {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .legend {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(28, 29, 43, 0.06);
+        }
+
+        .legend h2 {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .swatch {
+            width: 22px;
+            height: 16px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .swatch.bwi   { background: var(--cat-bwi); }
+        .swatch.ucs   { background: var(--cat-ucs); }
+        .swatch.itz   { background: var(--cat-itz); }
+        .swatch.sdwan { background: var(--cat-sdwan); }
+        .swatch.test  { background: var(--cat-test); }
+        .swatch.bdbos { background: var(--cat-bdbos); }
+        .swatch.spare { background: var(--bg-card); border: 1px solid var(--border-color); }
+        .swatch.bench { background: var(--cat-bench); }
+        .swatch.aisle { background: transparent; border: 1px dashed var(--room-border); }
+        .swatch.door  { background: transparent; border: 1px solid var(--text-secondary); border-radius: 0 0 0 8px; }
+
+        .legend-stats {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .project-info {
+            background: var(--cisco-header);
+            border-radius: 12px;
+            padding: 22px;
+            color: #d6d8e0;
+        }
+
+        .project-info h2 {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+
+        .project-info p {
+            font-size: 12.5px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 980px) {
+            .floor-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: calc(var(--navbar-height) + 16px) 14px 16px; }
+            .room { padding: 40px 14px 20px; gap: 14px; }
+            .brand-text { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('dashboard') }}" class="navbar-brand">
+            <span class="cisco-logo" aria-label="Cisco">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-0.44 0.24 120 60"><g transform="matrix(1.199534 0 0 1.199534 15.237208 6.249314)" fill="currentColor"><path d="M21.4 26.2h3.2v12.5h-3.2zM50 29.8c-.1-.1-1.1-.7-2.7-.7-2 0-3.5 1.4-3.5 3.3s1.4 3.3 3.5 3.3c1.5 0 2.5-.6 2.7-.7v3.4c-.4.1-1.5.4-2.9.4-3.6 0-6.7-2.4-6.7-6.5 0-3.7 2.8-6.5 6.7-6.5 1.5 0 2.6.4 2.9.4zm-33 0c-.1-.1-1.1-.7-2.7-.7-2 0-3.5 1.4-3.5 3.3s1.4 3.3 3.5 3.3c1.5 0 2.5-.6 2.7-.7v3.4c-.4.1-1.5.4-2.9.4-3.5 0-6.7-2.4-6.7-6.5 0-3.7 2.8-6.5 6.7-6.5 1.5 0 2.6.4 2.9.4zm49.5 2.7c0 3.6-2.8 6.5-6.6 6.5s-6.6-2.9-6.6-6.5 2.8-6.5 6.6-6.5c3.9 0 6.6 2.9 6.6 6.5zm-6.6-3.3c-1.9 0-3.3 1.5-3.3 3.3s1.4 3.3 3.3 3.3 3.3-1.5 3.3-3.3-1.4-3.3-3.3-3.3zm-23.4-.1s-1.4-.4-2.5-.4c-1.3 0-2 .4-2 1 0 .8.9 1 1.4 1.2l.9.3c2 .7 3 2.1 3 3.6 0 3.1-2.8 4.2-5.2 4.2-1.7 0-3.3-.3-3.4-.3v-2.9c.3.1 1.6.5 3 .5 1.6 0 2.3-.5 2.3-1.2 0-.6-.6-1-1.4-1.2-.2-.1-.5-.2-.7-.2-1.8-.6-3.2-1.6-3.2-3.7 0-2.3 1.8-3.9 4.7-3.9 1.5 0 3 .4 3.1.4z"/><use xlink:href="#A"/><path d="M12.7 8.5a1.58 1.58 0 0 0-1.6-1.6c-.9 0-1.5.7-1.5 1.6v7.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6V8.5zm8.7-5.9A1.58 1.58 0 0 0 19.8 1a1.58 1.58 0 0 0-1.6 1.6v16.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6zM30 8.5a1.58 1.58 0 0 0-1.6-1.6 1.58 1.58 0 0 0-1.6 1.6v7.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6z"/><use xlink:href="#A" x="34.5"/><path d="M47.2 8.5a1.58 1.58 0 1 0-3.2 0v7.6a1.58 1.58 0 1 0 3.2 0zm8.6-5.9a1.58 1.58 0 1 0-3.2 0v16.6a1.58 1.58 0 1 0 3.2 0zm8.6 5.9a1.58 1.58 0 1 0-3.2 0v7.6a1.58 1.58 0 1 0 3.2 0zm8.6 4.3a1.58 1.58 0 1 0-3.2 0v3.3a1.58 1.58 0 1 0 3.2 0z"/></g><defs><path id="A" d="M4.1 12.8a1.58 1.58 0 0 0-1.6-1.6 1.58 1.58 0 0 0-1.6 1.6v3.3a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6z"/></defs></svg>
+            </span>
+            <span class="brand-divider"></span>
+            <span class="brand-text">CNS Skynet Automation</span>
+        </a>
+        <div class="navbar-right">
+            <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Theme">
+                <span class="material-icons-round" id="darkModeIcon">dark_mode</span>
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="back-btn">
+                <span class="material-icons-round" style="font-size: 18px;">arrow_back</span>
+                Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Lab Floorplan</h1>
+            <p>Physical rack layout of the CNS Lab in Eschborn</p>
+        </div>
+
+        <div class="floor-layout">
+            <!-- Floorplan canvas -->
+            <div class="floor-canvas">
+                <div class="floor-title">CNS Lab Eschborn Floorplan</div>
+                <div class="room">
+                    <div class="entry-door"></div>
+                    <span class="entry-label">ENTRY</span>
+
+                    <div class="rack-rows">
+                        <!-- ROW A -->
+                        <div class="rack-column">
+                            <div class="row-label">ROW A</div>
+                            <div class="rack bwi"><span class="rack-no">01</span><span class="rack-tag">BWI</span></div>
+                            <div class="rack bwi"><span class="rack-no">02</span><span class="rack-tag">BWI</span></div>
+                            <div class="rack bwi"><span class="rack-no">03</span><span class="rack-tag">BWI</span></div>
+                            <div class="rack bwi"><span class="rack-no">04</span><span class="rack-tag">BWI</span></div>
+                            <div class="rack bwi"><span class="rack-no">05</span><span class="rack-tag">BWI</span></div>
+                            <div class="rack ucs"><span class="rack-no">06</span><span class="rack-tag">UCS</span></div>
+                            <div class="rack ucs"><span class="rack-no">07</span><span class="rack-tag">UCS</span></div>
+                            <div class="rack spare"><span class="rack-no">08</span><span class="rack-tag">SPARE</span></div>
+                            <div class="rack spare"><span class="rack-no">09</span><span class="rack-tag">SPARE</span></div>
+                            <div class="rack spare"><span class="rack-no">10</span><span class="rack-tag">SPARE</span></div>
+                        </div>
+
+                        <!-- ROW B -->
+                        <div class="rack-column">
+                            <div class="row-label">ROW B</div>
+                            <div class="rack itz"><span class="rack-no">11</span><span class="rack-tag">ITZ</span></div>
+                            <div class="rack itz"><span class="rack-no">12</span><span class="rack-tag">ITZ</span></div>
+                            <div class="rack sdwan"><span class="rack-no">13</span><span class="rack-tag">SD-WAN</span></div>
+                            <div class="rack test"><span class="rack-no">14</span><span class="rack-tag">Test</span></div>
+                            <div class="rack spare"><span class="rack-no">15</span><span class="rack-tag">SPARE</span></div>
+                            <div class="rack bdbos"><span class="rack-no">16</span><span class="rack-tag">BDBOS</span></div>
+                            <div class="rack bdbos"><span class="rack-no">17</span><span class="rack-tag">BDBOS</span></div>
+                            <div class="rack bdbos"><span class="rack-no">18</span><span class="rack-tag">BDBOS</span></div>
+                            <div class="rack spare"><span class="rack-no">19</span><span class="rack-tag">SPARE</span></div>
+                            <div class="rack spare"><span class="rack-no">20</span><span class="rack-tag">SPARE</span></div>
+                        </div>
+                    </div>
+
+                    <div class="benches">
+                        <div class="bench-group">
+                            <div class="bench"></div>
+                            <div class="bench"></div>
+                            <div class="bench"></div>
+                            <div class="bench"></div>
+                        </div>
+                        <div class="table-box">Table</div>
+                        <div style="width: 54px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDarkMode = body.classList.toggle('dark-mode');
+            const icon = document.getElementById('darkModeIcon');
+            localStorage.setItem('darkMode', isDarkMode);
+            icon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (savedDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeIcon').textContent = 'light_mode';
+            }
+        });
+    </script>
+</body>
+</html>

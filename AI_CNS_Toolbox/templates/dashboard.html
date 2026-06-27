@@ -14,26 +14,40 @@
         }
 
         :root {
-            /* Material Design 3 Color Tokens */
-            --md-primary: #1a73e8;
-            --md-primary-container: #d3e3fd;
+            /* Cisco Catalyst SD-WAN Manager Palette */
+            --cisco-header: #1c1d2b;     /* Dark top header bar */
+            --cisco-header-2: #15161f;   /* Header gradient end */
+            --cisco-blue: #0d6ca3;       /* Primary action blue */
+            --cisco-blue-hover: #0b5d8c; /* Darker hover */
+            --cisco-blue-soft: #e3f0f8;  /* Light blue tint */
+            --cisco-link: #0d6ca3;
+            --cisco-green: #3aa755;
+            --cisco-amber: #e8a32a;
+            --cisco-red: #cc2b2b;
+
+            /* Mapped Design Tokens (Catalyst light theme) */
+            --md-primary: #0d6ca3;
+            --md-primary-container: #e3f0f8;
             --md-on-primary: #ffffff;
-            --md-on-primary-container: #041e49;
-            --md-secondary: #5f6368;
-            --md-secondary-container: #e8eaed;
+            --md-on-primary-container: #0d3d5c;
+            --md-secondary: #6c6c78;
+            --md-secondary-container: #eef0f3;
             --md-surface: #ffffff;
-            --md-surface-dim: #f8f9fa;
-            --md-surface-container: #f1f3f4;
-            --md-surface-container-high: #e8eaed;
-            --md-on-surface: #1f1f1f;
-            --md-on-surface-variant: #5f6368;
-            --md-outline: #dadce0;
-            --md-outline-variant: #c4c7c5;
-            --md-error: #d93025;
-            --md-error-container: #f9dedc;
-            --md-success: #1e8e3e;
-            --md-success-container: #ceead6;
-            --md-warning: #f9ab00;
+            --md-surface-dim: #f5f6f8;
+            --md-surface-container: #f5f6f8;
+            --md-surface-container-high: #eceef1;
+            --md-on-surface: #23232d;
+            --md-on-surface-variant: #6c6c78;
+            --md-outline: #e1e3e8;
+            --md-outline-variant: #d2d5db;
+            --md-error: #cc2b2b;
+            --md-error-container: #fdecec;
+            --md-success: #3aa755;
+            --md-success-container: #e4f4e8;
+            --md-warning: #e8a32a;
+
+            /* Flat Catalyst accent (no bright gradient) */
+            --cisco-gradient: linear-gradient(180deg, #0d6ca3, #0b5d8c);
             
             /* Elevation Shadows */
             --md-elevation-1: 0 1px 2px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
@@ -54,24 +68,28 @@
 
         /* Dark Mode */
         body.dark-mode {
-            --md-primary: #8ab4f8;
-            --md-primary-container: #004a77;
-            --md-on-primary: #003258;
-            --md-on-primary-container: #d3e3fd;
-            --md-secondary: #9aa0a6;
-            --md-secondary-container: #3c4043;
-            --md-surface: #1f1f1f;
-            --md-surface-dim: #131314;
-            --md-surface-container: #2d2e30;
-            --md-surface-container-high: #3c4043;
-            --md-on-surface: #e3e3e3;
-            --md-on-surface-variant: #9aa0a6;
-            --md-outline: #5f6368;
-            --md-outline-variant: #444746;
-            --md-error: #f28b82;
-            --md-error-container: #8c1d18;
-            --md-success: #81c995;
-            --md-success-container: #0d652d;
+            --cisco-blue-soft: rgba(58, 155, 214, 0.14);
+            --cisco-blue-hover: #2b82bb;
+            --md-primary: #3a9bd6;
+            --md-primary-container: #0d3d5c;
+            --md-on-primary: #06222f;
+            --md-on-primary-container: #cbe6f5;
+            --md-secondary: #9a9ba6;
+            --md-secondary-container: #2a2b36;
+            --md-surface: #24252f;
+            --md-surface-dim: #1b1c26;
+            --md-surface-container: #2a2b36;
+            --md-surface-container-high: #33343f;
+            --md-on-surface: #e6e7eb;
+            --md-on-surface-variant: #9a9ba6;
+            --md-outline: #33343f;
+            --md-outline-variant: #2a2b36;
+            --md-error: #ef5b5b;
+            --md-error-container: #4a1717;
+            --md-success: #4cb96a;
+            --md-success-container: #14331d;
+
+            --cisco-gradient: linear-gradient(180deg, #3a9bd6, #2b82bb);
             
             --md-elevation-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.4);
             --md-elevation-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.4);
@@ -89,70 +107,87 @@
             line-height: 1.5;
         }
 
-        /* Top Navigation Bar */
+        /* Top Navigation Bar - Cisco Catalyst SD-WAN style */
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             height: var(--navbar-height);
-            background: var(--md-surface);
-            border-bottom: 1px solid var(--md-outline);
+            background: var(--cisco-header);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 24px;
-            z-index: 100;
-            box-shadow: var(--md-elevation-1);
+            padding: 0 20px;
+            z-index: 200;
         }
 
         .navbar-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--md-on-surface);
+            gap: 14px;
+            font-size: 16px;
+            font-weight: 400;
+            color: #ffffff;
             text-decoration: none;
+            letter-spacing: 0.2px;
         }
 
-        .navbar-brand .material-icons-round {
-            font-size: 32px;
-            color: var(--md-primary);
+        /* Official Cisco logo (inline SVG, tinted white) */
+        .cisco-logo {
+            display: inline-flex;
+            align-items: center;
+            color: #ffffff;
+            height: 34px;
         }
 
-        .navbar-brand span {
-            background: linear-gradient(135deg, var(--md-primary), #4285f4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .cisco-logo svg {
+            height: 34px;
+            width: auto;
+            display: block;
+        }
+
+        .navbar-brand .brand-divider {
+            width: 1px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.22);
+            margin: 0 4px;
+        }
+
+        .navbar-brand .brand-text {
+            color: #ffffff;
+            -webkit-text-fill-color: #ffffff;
+            font-weight: 400;
+            font-size: 17px;
         }
 
         .navbar-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .nav-chip {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 16px;
-            background: var(--md-surface-container);
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 7px 14px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 18px;
+            font-size: 13px;
             font-weight: 500;
-            color: var(--md-on-surface-variant);
+            color: #e7e8ec;
         }
 
         .icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             border: none;
             background: transparent;
-            color: var(--md-on-surface-variant);
+            color: #c2c4cf;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -161,7 +196,8 @@
         }
 
         .icon-btn:hover {
-            background: var(--md-surface-container-high);
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
         }
 
         .icon-btn:active {
@@ -172,52 +208,133 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 20px;
-            background: var(--md-error);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.07);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 18px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s ease;
-            box-shadow: var(--md-elevation-1);
         }
 
         .logout-btn:hover {
-            box-shadow: var(--md-elevation-2);
-            filter: brightness(1.1);
+            background: var(--cisco-red);
+            border-color: var(--cisco-red);
+        }
+
+        /* Left Sidebar - Catalyst SD-WAN navigation rail */
+        .app-sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--md-surface);
+            border-right: 1px solid var(--md-outline);
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 90;
+            overflow-y: auto;
+        }
+
+        .sidebar-section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--md-on-surface-variant);
+            padding: 16px 12px 6px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            text-decoration: none;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.18s ease;
+        }
+
+        .sidebar-item .material-icons-round {
+            font-size: 21px;
+        }
+
+        .sidebar-item:hover {
+            background: var(--md-surface-container);
+            color: var(--md-on-surface);
+        }
+
+        .sidebar-item.active {
+            background: var(--cisco-blue-soft);
+            color: var(--md-primary);
+            border-left-color: var(--md-primary);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px 12px;
+            font-size: 11px;
+            color: var(--md-on-surface-variant);
+            border-top: 1px solid var(--md-outline);
         }
 
         /* Main Content Area */
         .main-content {
             margin-top: var(--navbar-height);
-            padding: 32px;
+            margin-left: var(--sidebar-width);
+            padding: 28px 36px;
             max-width: var(--content-max-width);
-            margin-left: auto;
-            margin-right: auto;
+        }
+
+        @media (max-width: 900px) {
+            .app-sidebar { display: none; }
+            .main-content { margin-left: 0; }
         }
 
         /* Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, var(--md-primary) 0%, #4285f4 50%, #34a853 100%);
-            border-radius: var(--border-radius-xl);
-            padding: 48px;
-            margin-bottom: 32px;
+            background: var(--cisco-gradient);
+            border-radius: var(--border-radius-md);
+            padding: 32px 36px;
+            margin-bottom: 28px;
             position: relative;
             overflow: hidden;
-            box-shadow: var(--md-elevation-4);
+            box-shadow: 0 4px 16px rgba(13, 60, 92, 0.18);
         }
 
         .hero-section::before {
             content: '';
             position: absolute;
             top: -50%;
-            right: -50%;
-            width: 100%;
+            right: -10%;
+            width: 60%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(0, 188, 235, 0.35) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: linear-gradient(120deg, rgba(0,0,0,0.6), transparent 70%);
+            -webkit-mask-image: linear-gradient(120deg, rgba(0,0,0,0.6), transparent 70%);
             pointer-events: none;
         }
 
@@ -272,17 +389,42 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 24px;
+            padding-left: 14px;
+            position: relative;
+        }
+
+        .section-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            bottom: 4px;
+            width: 4px;
+            border-radius: 4px;
+            background: var(--cisco-gradient);
         }
 
         .section-header h2 {
-            font-size: 22px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             color: var(--md-on-surface);
+            letter-spacing: -0.2px;
         }
 
         .section-header .material-icons-round {
-            font-size: 28px;
-            color: var(--md-primary);
+            font-size: 26px;
+            color: var(--cisco-blue);
+        }
+
+        .section-header .section-count {
+            margin-left: auto;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--md-on-surface-variant);
+            background: var(--md-surface-container);
+            border: 1px solid var(--md-outline);
+            padding: 5px 12px;
+            border-radius: 14px;
         }
 
         /* Script Cards Grid */
@@ -295,10 +437,10 @@
 
         .script-card {
             background: var(--md-surface);
-            border-radius: var(--border-radius-lg);
-            padding: 24px;
-            box-shadow: var(--md-elevation-1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: var(--border-radius-md);
+            padding: 22px;
+            box-shadow: 0 1px 2px rgba(28, 29, 43, 0.06);
+            transition: all 0.2s ease;
             border: 1px solid var(--md-outline);
             display: flex;
             flex-direction: column;
@@ -311,41 +453,85 @@
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--md-primary), #4285f4);
-            transform: scaleX(0);
-            transform-origin: left;
+            bottom: 0;
+            width: 4px;
+            background: var(--cisco-gradient);
+            transform: scaleY(0);
+            transform-origin: top;
             transition: transform 0.3s ease;
         }
 
         .script-card:hover {
-            box-shadow: var(--md-elevation-4);
-            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(28, 29, 43, 0.12);
+            transform: translateY(-2px);
             border-color: var(--md-primary);
         }
 
         .script-card:hover::before {
-            transform: scaleX(1);
+            transform: scaleY(1);
+        }
+
+        .script-card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 18px;
         }
 
         .script-icon-wrapper {
-            width: 56px;
-            height: 56px;
-            border-radius: var(--border-radius-md);
-            background: var(--md-primary-container);
+            width: 48px;
+            height: 48px;
+            border-radius: var(--border-radius-sm);
+            background: var(--cisco-blue-soft);
+            border: 1px solid var(--md-outline);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
         }
 
         .script-icon {
-            font-size: 32px;
+            font-size: 26px;
+        }
+
+        /* Status chip on each automation card */
+        .script-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .script-status::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .script-status.ready {
+            color: var(--md-success);
+            background: var(--md-success-container);
+        }
+
+        .script-status.soon {
+            color: #9a6700;
+            background: #fff3d6;
+        }
+
+        body.dark-mode .script-status.soon {
+            color: var(--cisco-amber);
+            background: rgba(232, 163, 42, 0.16);
         }
 
         .script-card h3 {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
             color: var(--md-on-surface);
             margin-bottom: 8px;
@@ -365,21 +551,20 @@
             justify-content: center;
             gap: 8px;
             width: 100%;
-            padding: 14px 24px;
+            padding: 13px 24px;
             background: var(--md-primary);
             color: var(--md-on-primary);
             border: none;
-            border-radius: var(--border-radius-xl);
+            border-radius: var(--border-radius-md);
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: var(--md-elevation-1);
+            box-shadow: none;
         }
 
         .run-btn:hover {
-            box-shadow: var(--md-elevation-3);
-            filter: brightness(1.05);
+            background: var(--cisco-blue-hover);
         }
 
         .run-btn:active {
@@ -917,8 +1102,11 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <a href="#" class="navbar-brand">
-            <span class="material-icons-round">smart_toy</span>
-            <span>CNS Skynet</span>
+            <span class="cisco-logo" aria-label="Cisco">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-0.44 0.24 120 60"><g transform="matrix(1.199534 0 0 1.199534 15.237208 6.249314)" fill="currentColor"><path d="M21.4 26.2h3.2v12.5h-3.2zM50 29.8c-.1-.1-1.1-.7-2.7-.7-2 0-3.5 1.4-3.5 3.3s1.4 3.3 3.5 3.3c1.5 0 2.5-.6 2.7-.7v3.4c-.4.1-1.5.4-2.9.4-3.6 0-6.7-2.4-6.7-6.5 0-3.7 2.8-6.5 6.7-6.5 1.5 0 2.6.4 2.9.4zm-33 0c-.1-.1-1.1-.7-2.7-.7-2 0-3.5 1.4-3.5 3.3s1.4 3.3 3.5 3.3c1.5 0 2.5-.6 2.7-.7v3.4c-.4.1-1.5.4-2.9.4-3.5 0-6.7-2.4-6.7-6.5 0-3.7 2.8-6.5 6.7-6.5 1.5 0 2.6.4 2.9.4zm49.5 2.7c0 3.6-2.8 6.5-6.6 6.5s-6.6-2.9-6.6-6.5 2.8-6.5 6.6-6.5c3.9 0 6.6 2.9 6.6 6.5zm-6.6-3.3c-1.9 0-3.3 1.5-3.3 3.3s1.4 3.3 3.3 3.3 3.3-1.5 3.3-3.3-1.4-3.3-3.3-3.3zm-23.4-.1s-1.4-.4-2.5-.4c-1.3 0-2 .4-2 1 0 .8.9 1 1.4 1.2l.9.3c2 .7 3 2.1 3 3.6 0 3.1-2.8 4.2-5.2 4.2-1.7 0-3.3-.3-3.4-.3v-2.9c.3.1 1.6.5 3 .5 1.6 0 2.3-.5 2.3-1.2 0-.6-.6-1-1.4-1.2-.2-.1-.5-.2-.7-.2-1.8-.6-3.2-1.6-3.2-3.7 0-2.3 1.8-3.9 4.7-3.9 1.5 0 3 .4 3.1.4z"/><use xlink:href="#A"/><path d="M12.7 8.5a1.58 1.58 0 0 0-1.6-1.6c-.9 0-1.5.7-1.5 1.6v7.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6V8.5zm8.7-5.9A1.58 1.58 0 0 0 19.8 1a1.58 1.58 0 0 0-1.6 1.6v16.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6zM30 8.5a1.58 1.58 0 0 0-1.6-1.6 1.58 1.58 0 0 0-1.6 1.6v7.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6z"/><use xlink:href="#A" x="34.5"/><path d="M47.2 8.5a1.58 1.58 0 1 0-3.2 0v7.6a1.58 1.58 0 1 0 3.2 0zm8.6-5.9a1.58 1.58 0 1 0-3.2 0v16.6a1.58 1.58 0 1 0 3.2 0zm8.6 5.9a1.58 1.58 0 1 0-3.2 0v7.6a1.58 1.58 0 1 0 3.2 0zm8.6 4.3a1.58 1.58 0 1 0-3.2 0v3.3a1.58 1.58 0 1 0 3.2 0z"/></g><defs><path id="A" d="M4.1 12.8a1.58 1.58 0 0 0-1.6-1.6 1.58 1.58 0 0 0-1.6 1.6v3.3a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6z"/></defs></svg>
+            </span>
+            <span class="brand-divider"></span>
+            <span class="brand-text">CNS Skynet Automation</span>
         </a>
         <div class="navbar-actions">
             <div class="nav-chip">
@@ -935,19 +1123,91 @@
         </div>
     </nav>
 
+    <!-- Left Sidebar -->
+    <aside class="app-sidebar">
+        <a class="sidebar-item active" href="#">
+            <span class="material-icons-round">dashboard</span>
+            Dashboard
+        </a>
+        <a class="sidebar-item" href="#scripts-section">
+            <span class="material-icons-round">terminal</span>
+            Automation
+        </a>
+        <a class="sidebar-item" href="#resources-section">
+            <span class="material-icons-round">library_books</span>
+            Lab Resources
+        </a>
+        <a class="sidebar-item" href="{{ url_for('pdu_management') }}">
+            <span class="material-icons-round">power</span>
+            Power / PDU
+        </a>
+        <a class="sidebar-item" href="{{ url_for('floorplan') }}">
+            <span class="material-icons-round">grid_view</span>
+            Lab Floorplan
+        </a>
+        <div class="sidebar-section-label">Account</div>
+        <div class="sidebar-item" onclick="toggleDarkMode()">
+            <span class="material-icons-round">brightness_6</span>
+            Toggle Theme
+        </div>
+        <a class="sidebar-item" href="{{ url_for('logout') }}">
+            <span class="material-icons-round">logout</span>
+            Sign Out
+        </a>
+        <div class="sidebar-footer">
+            Cisco CX &middot; CNS Lab<br>FKF3 Automation Toolbox
+        </div>
+    </aside>
+
     <!-- Main Content -->
     <main class="main-content">
+        <!-- Hero Banner -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="material-icons-round">hub</span>
+                    Welcome back, {{ username }}
+                </h1>
+                <p class="hero-subtitle">
+                    Your Cisco CNS Automation Control Center, designed for the Cisco Labs in Eschborn and Berlin.
+                </p>
+                <div class="hero-meta">
+                    <div class="meta-chip">
+                        <span class="material-icons-round" style="font-size: 16px;">bolt</span>
+                        {{ scripts|length }} Automations
+                    </div>
+                    <div class="meta-chip">
+                        <span class="material-icons-round" style="font-size: 16px;">verified</span>
+                        Cisco CX CNS Lab
+                    </div>
+                    <div class="meta-chip">
+                        <span class="material-icons-round" style="font-size: 16px;">schedule</span>
+                        <span id="heroClock">--:--</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Automation Scripts Section -->
-        <section>
+        <section id="scripts-section">
             <div class="section-header">
                 <span class="material-icons-round">terminal</span>
                 <h2>Automation Scripts</h2>
+                <span class="section-count">{{ scripts|length }} workflows</span>
             </div>
             <div class="scripts-grid">
                 {% for script_id, script_info in scripts.items() %}
+                {% set is_soon = 'no function yet' in script_info.description %}
                 <div class="script-card">
-                    <div class="script-icon-wrapper">
-                        <span class="script-icon">{{ script_info.icon }}</span>
+                    <div class="script-card-top">
+                        <div class="script-icon-wrapper">
+                            <span class="script-icon">{{ script_info.icon }}</span>
+                        </div>
+                        {% if is_soon %}
+                        <span class="script-status soon">Coming Soon</span>
+                        {% else %}
+                        <span class="script-status ready">Ready</span>
+                        {% endif %}
                     </div>
                     <h3>{{ script_info.name }}</h3>
                     <p>{{ script_info.description }}</p>
@@ -961,7 +1221,7 @@
         </section>
 
         <!-- Lab Resources Section -->
-        <section>
+        <section id="resources-section">
             <div class="section-header">
                 <span class="material-icons-round">library_books</span>
                 <h2>Lab Resources</h2>
@@ -1290,6 +1550,16 @@
             if (savedDarkMode) {
                 document.body.classList.add('dark-mode');
                 document.getElementById('darkModeIcon').textContent = 'light_mode';
+            }
+
+            // Live clock in hero banner
+            const clockEl = document.getElementById('heroClock');
+            if (clockEl) {
+                const updateClock = () => {
+                    clockEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                };
+                updateClock();
+                setInterval(updateClock, 1000 * 30);
             }
         });
 
