@@ -160,6 +160,7 @@ def backup_device_config(device_ip, username="admin", password="m1amivice19!",
             "device_ip": device_ip,
             "hostname": hostname,
             "filename": filename,
+            "config": config,
             "timestamp": timestamp
         }
     

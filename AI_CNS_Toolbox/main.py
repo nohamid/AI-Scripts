@@ -274,6 +274,8 @@ with patch('builtins.input', side_effect=inputs):
                     'message': result['message'],
                     'hostname': result.get('hostname'),
                     'filename': result.get('filename'),
+                    'config': result.get('config'),
+                    'ip': result.get('device_ip'),
                     'timestamp': datetime.now().isoformat()
                 })
             else:

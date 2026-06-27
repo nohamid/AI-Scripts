@@ -2052,7 +2052,7 @@
                 `;
             }
             
-            if (data.config) {
+            if (data.config && !data.filename) {
                 detailsHtml += `
                     <div style="margin-top: 20px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--md-on-surface);">Generated Configuration:</label>
@@ -2065,18 +2065,40 @@
                 `;
             }
             
-            if (data.hostname && data.filename && !data.config) {
-                const backupSummary = `Backup Summary\n${'='.repeat(50)}\n\nHostname: ${data.hostname}\nFilename: ${data.filename}\nDevice IP: ${data.ip || 'N/A'}\nBackup Time: ${new Date(data.timestamp).toLocaleString()}\n\n${'='.repeat(50)}`;
+            if (data.filename && data.config) {
+                const safeConfig = data.config.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 detailsHtml += `
                     <div style="margin-top: 20px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--md-on-surface);">Backup Summary:</label>
-                        <textarea id="backupSummaryText" readonly class="config-textarea" style="height: 150px;">${backupSummary}</textarea>
-                        <button class="copy-btn" onclick="copyToClipboard('backupSummaryText')">
-                            <span class="material-icons-round" style="font-size: 18px;">content_copy</span>
-                            Copy to Clipboard
-                        </button>
+                        <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+                            <div class="meta-chip" style="background: var(--md-surface-container); color: var(--md-on-surface);">
+                                <span class="material-icons-round" style="font-size: 16px;">dns</span>
+                                ${data.hostname || 'unknown'}
+                            </div>
+                            <div class="meta-chip" style="background: var(--md-surface-container); color: var(--md-on-surface);">
+                                <span class="material-icons-round" style="font-size: 16px;">lan</span>
+                                ${data.ip || 'N/A'}
+                            </div>
+                            <div class="meta-chip" style="background: var(--md-surface-container); color: var(--md-on-surface);">
+                                <span class="material-icons-round" style="font-size: 16px;">description</span>
+                                ${data.filename}
+                            </div>
+                        </div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--md-on-surface);">Backed Up Configuration:</label>
+                        <textarea id="backupConfigText" readonly class="config-textarea">${safeConfig}</textarea>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="copy-btn" onclick="copyToClipboard('backupConfigText')">
+                                <span class="material-icons-round" style="font-size: 18px;">content_copy</span>
+                                Copy to Clipboard
+                            </button>
+                            <button class="copy-btn" onclick="downloadTextFile('backupConfigText', '${data.filename}')">
+                                <span class="material-icons-round" style="font-size: 18px;">download</span>
+                                Download .txt
+                            </button>
+                        </div>
                     </div>
                 `;
+                // Automatically download the backed-up config to the user's machine
+                setTimeout(() => downloadConfigContent(data.config, data.filename), 300);
             }
             
             if (data.total_devices !== undefined && data.data) {
@@ -2238,6 +2260,24 @@
                 console.error('Error downloading CSV:', error);
                 alert('Failed to download CSV file.');
             });
+        }
+
+        function downloadConfigContent(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'config.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function downloadTextFile(textareaId, filename) {
+            const textElement = document.getElementById(textareaId);
+            if (!textElement) return;
+            downloadConfigContent(textElement.value, filename);
         }
 
         function copyToClipboard(textareaId) {
