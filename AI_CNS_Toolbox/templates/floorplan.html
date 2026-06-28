@@ -312,6 +312,31 @@
             box-shadow: none;
         }
 
+        /* Clickable racks (linked to NetBox) */
+        .rack.clickable {
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, outline-color 0.12s ease;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        .rack.clickable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            outline-color: var(--cisco-blue);
+        }
+
+        .rack.clickable::after {
+            content: 'open_in_new';
+            font-family: 'Material Icons Round';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 12px;
+            opacity: 0.55;
+        }
+
         /* Work benches (inside room) */
         .benches {
             display: flex;
@@ -535,6 +560,36 @@
                 document.body.classList.add('dark-mode');
                 document.getElementById('darkModeIcon').textContent = 'light_mode';
             }
+
+            // Interactive racks: map rack number -> NetBox rack ID.
+            // Add more entries here as racks are onboarded into NetBox.
+            const NETBOX_BASE = 'http://10.49.208.43:8000/dcim/racks/';
+            const RACK_NETBOX_IDS = {
+                '14': 1
+            };
+
+            document.querySelectorAll('.rack').forEach(function(rack) {
+                const noEl = rack.querySelector('.rack-no');
+                if (!noEl) return;
+                const rackNo = noEl.textContent.trim();
+                const netboxId = RACK_NETBOX_IDS[rackNo];
+                if (netboxId === undefined) return;
+
+                const url = NETBOX_BASE + netboxId + '/';
+                rack.classList.add('clickable');
+                rack.setAttribute('role', 'link');
+                rack.setAttribute('tabindex', '0');
+                rack.setAttribute('title', 'Open Rack ' + rackNo + ' in NetBox');
+
+                const open = function() { window.open(url, '_blank', 'noopener'); };
+                rack.addEventListener('click', open);
+                rack.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        open();
+                    }
+                });
+            });
         });
     </script>
 </body>
