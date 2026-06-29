@@ -73,7 +73,7 @@
             color: white;
             text-align: center;
             background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%),
-                        url('{{ url_for("static", filename="terminator-skynet-robot-aq1a9pywdc9684bk.jpg") }}');
+                        url('{{ url_for("static", filename=wallpaper if wallpaper else "terminator-skynet-robot-aq1a9pywdc9684bk.jpg") }}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;

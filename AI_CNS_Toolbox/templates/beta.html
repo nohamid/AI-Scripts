@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beta Lab Console - CNS Skynet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cisco-header: #1c1d2b;
+            --cisco-blue: #0d6ca3;
+            --cisco-blue-hover: #0b5d8c;
+            --cisco-blue-soft: #e3f0f8;
+            --navbar-height: 64px;
+
+            --bg-card: #ffffff;
+            --surface-dim: #f5f6f8;
+            --text-primary: #23232d;
+            --text-secondary: #6c6c78;
+            --text-light: #93939d;
+            --border-color: #e1e3e8;
+            --accent-blue: #0d6ca3;
+        }
+
+        body.dark-mode {
+            --cisco-blue-soft: rgba(58, 155, 214, 0.14);
+            --cisco-blue-hover: #2b82bb;
+            --bg-card: #24252f;
+            --surface-dim: #1b1c26;
+            --text-primary: #e6e7eb;
+            --text-secondary: #9a9ba6;
+            --text-light: #7c7d88;
+            --border-color: #33343f;
+            --accent-blue: #3a9bd6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--surface-dim);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--navbar-height);
+            background: var(--cisco-header);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 200;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .cisco-logo {
+            display: inline-flex;
+            align-items: center;
+            color: #ffffff;
+            height: 34px;
+        }
+
+        .cisco-logo svg {
+            height: 34px;
+            width: auto;
+            display: block;
+        }
+
+        .brand-divider {
+            width: 1px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.22);
+            margin: 0 4px;
+        }
+
+        .brand-text {
+            color: #ffffff;
+            font-weight: 400;
+            font-size: 17px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: #c2c4cf;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.07);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--cisco-blue);
+            border-color: var(--cisco-blue);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: calc(var(--navbar-height) + 28px) 36px 28px;
+        }
+
+        .header {
+            background: var(--bg-card);
+            padding: 26px 30px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px rgba(28, 29, 43, 0.06);
+            border-left: 4px solid var(--cisco-blue);
+        }
+
+        .header h1 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .beta-badge {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #ffffff;
+            background: var(--cisco-blue);
+            border-radius: 12px;
+            padding: 3px 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Combined Lab Map */
+        .lab-map-section {
+            margin-top: 8px;
+        }
+
+        .lab-map-section .map-hint {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .lab-map {
+            display: flex;
+            gap: 48px;
+            justify-content: center;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px 24px;
+            box-shadow: 0 1px 3px rgba(28, 29, 43, 0.06);
+        }
+
+        .map-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 240px;
+        }
+
+        .map-col-label {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .map-rack {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #000000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+        }
+
+        .map-rack-body {
+            padding: 12px 8px;
+            text-align: center;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .map-rack-no {
+            display: block;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .map-rack-tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.92;
+        }
+
+        .map-rack.bwi   .map-rack-body { background: #cc2222; }
+        .map-rack.ucs   .map-rack-body { background: #2f8f3e; }
+        .map-rack.itz   .map-rack-body { background: #b5367a; }
+        .map-rack.sdwan .map-rack-body { background: #8324a8; }
+        .map-rack.test  .map-rack-body { background: #566472; }
+        .map-rack.bdbos .map-rack-body { background: #1a6fc4; }
+        .map-rack.exdc  .map-rack-body { background: #0e7c86; }
+        .map-rack.spare .map-rack-body {
+            background: var(--surface-dim);
+            color: var(--text-light);
+        }
+        .map-rack.spare .map-rack-tag { opacity: 1; }
+
+        /* Rack body linked to NetBox */
+        .map-rack-body.netbox-link {
+            cursor: pointer;
+            position: relative;
+            transition: filter 0.12s ease;
+        }
+        .map-rack-body.netbox-link:hover { filter: brightness(1.14); }
+        .map-rack-body.netbox-link:focus-visible {
+            outline: 2px solid var(--cisco-blue);
+            outline-offset: -2px;
+        }
+        .map-rack-body.netbox-link::after {
+            content: 'open_in_new';
+            font-family: 'Material Icons Round';
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 13px;
+            opacity: 0.75;
+        }
+
+        /* PDU strips */
+        .pdu-strip {
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 6px 0;
+            cursor: pointer;
+            transition: filter 0.12s ease, transform 0.12s ease;
+        }
+
+        .pdu-strip.pdu1 { background: #44474f; }
+        .pdu-strip.pdu2 { background: #44474f; }
+        .pdu-strip:hover { filter: brightness(1.18); }
+        .pdu-strip:active { transform: translateY(1px); }
+
+        .pdu-strip.placeholder {
+            background: #c2c7d0;
+            cursor: default;
+            pointer-events: none;
+        }
+        .pdu-strip.placeholder::after { content: "\00a0"; }
+        .pdu-strip.placeholder:hover { filter: none; }
+
+        .map-legend {
+            display: flex;
+            gap: 28px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .map-legend i.dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            vertical-align: -2px;
+            margin-right: 6px;
+            border: 1px solid rgba(0, 0, 0, 0.25);
+        }
+
+        .map-legend i.dot.smart { background: #44474f; }
+        .map-legend i.dot.nonsmart { background: #c2c7d0; }
+        .map-legend i.dot.netbox { background: var(--cisco-blue); }
+
+        @media (max-width: 768px) {
+            .container { padding: calc(var(--navbar-height) + 16px) 14px 16px; }
+            .brand-text { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{{ url_for('dashboard') }}" class="navbar-brand">
+            <span class="cisco-logo" aria-label="Cisco">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-0.44 0.24 120 60"><g transform="matrix(1.199534 0 0 1.199534 15.237208 6.249314)" fill="currentColor"><path d="M21.4 26.2h3.2v12.5h-3.2zM50 29.8c-.1-.1-1.1-.7-2.7-.7-2 0-3.5 1.4-3.5 3.3s1.4 3.3 3.5 3.3c1.5 0 2.5-.6 2.7-.7v3.4c-.4.1-1.5.4-2.9.4-3.6 0-6.7-2.4-6.7-6.5 0-3.7 2.8-6.5 6.7-6.5 1.5 0 2.6.4 2.9.4zm-33 0c-.1-.1-1.1-.7-2.7-.7-2 0-3.5 1.4-3.5 3.3s1.4 3.3 3.5 3.3c1.5 0 2.5-.6 2.7-.7v3.4c-.4.1-1.5.4-2.9.4-3.5 0-6.7-2.4-6.7-6.5 0-3.7 2.8-6.5 6.7-6.5 1.5 0 2.6.4 2.9.4zm49.5 2.7c0 3.6-2.8 6.5-6.6 6.5s-6.6-2.9-6.6-6.5 2.8-6.5 6.6-6.5c3.9 0 6.6 2.9 6.6 6.5zm-6.6-3.3c-1.9 0-3.3 1.5-3.3 3.3s1.4 3.3 3.3 3.3 3.3-1.5 3.3-3.3-1.4-3.3-3.3-3.3zm-23.4-.1s-1.4-.4-2.5-.4c-1.3 0-2 .4-2 1 0 .8.9 1 1.4 1.2l.9.3c2 .7 3 2.1 3 3.6 0 3.1-2.8 4.2-5.2 4.2-1.7 0-3.3-.3-3.4-.3v-2.9c.3.1 1.6.5 3 .5 1.6 0 2.3-.5 2.3-1.2 0-.6-.6-1-1.4-1.2-.2-.1-.5-.2-.7-.2-1.8-.6-3.2-1.6-3.2-3.7 0-2.3 1.8-3.9 4.7-3.9 1.5 0 3 .4 3.1.4z"/><use xlink:href="#A"/><path d="M12.7 8.5a1.58 1.58 0 0 0-1.6-1.6c-.9 0-1.5.7-1.5 1.6v7.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6V8.5zm8.7-5.9A1.58 1.58 0 0 0 19.8 1a1.58 1.58 0 0 0-1.6 1.6v16.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6zM30 8.5a1.58 1.58 0 0 0-1.6-1.6 1.58 1.58 0 0 0-1.6 1.6v7.6a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6z"/><use xlink:href="#A" x="34.5"/><path d="M47.2 8.5a1.58 1.58 0 1 0-3.2 0v7.6a1.58 1.58 0 1 0 3.2 0zm8.6-5.9a1.58 1.58 0 1 0-3.2 0v16.6a1.58 1.58 0 1 0 3.2 0zm8.6 5.9a1.58 1.58 0 1 0-3.2 0v7.6a1.58 1.58 0 1 0 3.2 0zm8.6 4.3a1.58 1.58 0 1 0-3.2 0v3.3a1.58 1.58 0 1 0 3.2 0z"/></g><defs><path id="A" d="M4.1 12.8a1.58 1.58 0 0 0-1.6-1.6 1.58 1.58 0 0 0-1.6 1.6v3.3a1.58 1.58 0 0 0 1.6 1.6 1.58 1.58 0 0 0 1.6-1.6z"/></defs></svg>
+            </span>
+            <span class="brand-divider"></span>
+            <span class="brand-text">CNS Skynet Automation</span>
+        </a>
+        <div class="navbar-right">
+            <button class="icon-btn" onclick="toggleDarkMode()" title="Toggle Theme">
+                <span class="material-icons-round" id="darkModeIcon">dark_mode</span>
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="back-btn">
+                <span class="material-icons-round" style="font-size: 18px;">arrow_back</span>
+                Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Lab Console <span class="beta-badge">Beta</span></h1>
+            <p>One combined view of the CNS Lab Eschborn — click a <strong>rack</strong> to open it in NetBox, or click a <strong>PDU 1 / PDU 2</strong> strip to control its power.</p>
+        </div>
+
+        <div class="lab-map-section">
+            <p class="map-hint">Dark grey strips are smart PDUs (clickable). Light grey strips mean the rack has no smart PDU on that side.</p>
+            <div class="lab-map">
+                <!-- ROW A -->
+                <div class="map-col">
+                    <div class="map-col-label">ROW A</div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu1-1.cisco.com" target="_blank" rel="noopener" title="Rack 01 · PDU 1 · fkf-lab-pdu1-1.cisco.com · 10.49.208.98">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">01</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu1-2.cisco.com" target="_blank" rel="noopener" title="Rack 01 · PDU 2 · fkf-lab-pdu1-2.cisco.com · 10.49.208.99">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu2-1.cisco.com" target="_blank" rel="noopener" title="Rack 02 · PDU 1 · fkf-lab-pdu2-1.cisco.com · 10.49.208.118">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">02</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu2-2.cisco.com" target="_blank" rel="noopener" title="Rack 02 · PDU 2 · fkf-lab-pdu2-2.cisco.com · 10.49.208.119">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu3-1.cisco.com" target="_blank" rel="noopener" title="Rack 03 · PDU 1 · fkf-lab-pdu3-1.cisco.com · 10.49.208.120">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">03</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu3-2.cisco.com" target="_blank" rel="noopener" title="Rack 03 · PDU 2 · fkf-lab-pdu3-2.cisco.com · 10.49.208.121">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu4-1.cisco.com" target="_blank" rel="noopener" title="Rack 04 · PDU 1 · fkf-lab-pdu4-1.cisco.com · 10.49.208.122">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">04</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu4-2.cisco.com" target="_blank" rel="noopener" title="Rack 04 · PDU 2 · fkf-lab-pdu4-2.cisco.com · 10.49.208.123">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu5-1.cisco.com" target="_blank" rel="noopener" title="Rack 05 · PDU 1 · fkf-lab-pdu5-1.cisco.com · 10.49.208.115">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">05</span><span class="map-rack-tag">BWI</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack ucs">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu6-1.cisco.com" target="_blank" rel="noopener" title="Rack 06 · PDU 1 · fkf-lab-pdu6-1.cisco.com · 10.49.208.103">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">06</span><span class="map-rack-tag">UCS</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu6-2.cisco.com" target="_blank" rel="noopener" title="Rack 06 · PDU 2 · fkf-lab-pdu6-2.cisco.com · 10.49.208.104">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack ucs">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu7-1.cisco.com" target="_blank" rel="noopener" title="Rack 07 · PDU 1 · fkf-lab-pdu7-1.cisco.com · 10.49.208.100">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">07</span><span class="map-rack-tag">UCS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack spare">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">08</span><span class="map-rack-tag">SPARE</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack spare">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">09</span><span class="map-rack-tag">SPARE</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack spare">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">10</span><span class="map-rack-tag">SPARE</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+                </div>
+
+                <!-- ROW B -->
+                <div class="map-col">
+                    <div class="map-col-label">ROW B</div>
+
+                    <div class="map-rack itz">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">11</span><span class="map-rack-tag">ITZ</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu11-2.cisco.com" target="_blank" rel="noopener" title="Rack 11 · PDU 2 · fkf-lab-pdu11-2.cisco.com · 10.49.208.108">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack itz">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu12-1.cisco.com" target="_blank" rel="noopener" title="Rack 12 · PDU 1 · fkf-lab-pdu12-1.cisco.com · 10.49.208.107">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">12</span><span class="map-rack-tag">ITZ</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu12-2.cisco.com" target="_blank" rel="noopener" title="Rack 12 · PDU 2 · fkf-lab-pdu12-2.cisco.com · 10.49.208.108">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack sdwan">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu13-1.cisco.com" target="_blank" rel="noopener" title="Rack 13 · PDU 1 · fkf-lab-pdu13-1.cisco.com · 10.49.208.101">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">13</span><span class="map-rack-tag">SD-WAN</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu13-2.cisco.com" target="_blank" rel="noopener" title="Rack 13 · PDU 2 · fkf-lab-pdu13-2.cisco.com · 10.49.208.102">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack test">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu14-1.cisco.com" target="_blank" rel="noopener" title="Rack 14 · PDU 1 · fkf-lab-pdu14-1.cisco.com · 10.49.208.105">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">14</span><span class="map-rack-tag">TEST</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu14-2.cisco.com" target="_blank" rel="noopener" title="Rack 14 · PDU 2 · fkf-lab-pdu14-2.cisco.com · 10.49.208.106">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack ucs">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">15</span><span class="map-rack-tag">UCS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack bdbos">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu16-1.cisco.com" target="_blank" rel="noopener" title="Rack 16 · PDU 1 · fkf-lab-pdu16-1.cisco.com · 10.49.208.110">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">16</span><span class="map-rack-tag">BDBOS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack bdbos">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu17-1.cisco.com" target="_blank" rel="noopener" title="Rack 17 · PDU 1 · fkf-lab-pdu17-1.cisco.com · 10.49.208.110">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">17</span><span class="map-rack-tag">BDBOS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack bdbos">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu18-1.cisco.com" target="_blank" rel="noopener" title="Rack 18 · PDU 1 · fkf-lab-pdu18-1.cisco.com · 10.49.208.110">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">18</span><span class="map-rack-tag">BDBOS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack exdc">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu19-1.cisco.com" target="_blank" rel="noopener" title="Rack 19 · PDU 1 · fkf-lab-pdu19-1.cisco.com · 10.49.208.111">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">19</span><span class="map-rack-tag">EX DC</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu19-2.cisco.com" target="_blank" rel="noopener" title="Rack 19 · PDU 2 · fkf-lab-pdu19-2.cisco.com · 10.49.208.112">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack exdc">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu20-1.cisco.com" target="_blank" rel="noopener" title="Rack 20 · PDU 1 · fkf-lab-pdu20-1.cisco.com · 10.49.208.113">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">20</span><span class="map-rack-tag">EX DC</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu20-2.cisco.com" target="_blank" rel="noopener" title="Rack 20 · PDU 2 · fkf-lab-pdu20-2.cisco.com · 10.49.208.114">PDU 2</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-legend">
+                <span><i class="dot netbox"></i>Rack body &rarr; open in NetBox</span>
+                <span><i class="dot smart"></i>Smart PDU (clickable)</span>
+                <span><i class="dot nonsmart"></i>No smart PDU</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDarkMode = body.classList.toggle('dark-mode');
+            document.getElementById('darkModeIcon').textContent = isDarkMode ? 'light_mode' : 'dark_mode';
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (savedDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeIcon').textContent = 'light_mode';
+            }
+
+            // Map rack number -> NetBox rack ID. Add entries as racks are onboarded.
+            const NETBOX_BASE = 'http://10.49.208.43:8000/dcim/racks/';
+            const RACK_NETBOX_IDS = {
+                '14': 1
+            };
+
+            document.querySelectorAll('.map-rack').forEach(function(rack) {
+                const noEl = rack.querySelector('.map-rack-no');
+                if (!noEl) return;
+                const rackNo = noEl.textContent.trim();
+                const netboxId = RACK_NETBOX_IDS[rackNo];
+                if (netboxId === undefined) return;
+
+                const body = rack.querySelector('.map-rack-body');
+                if (!body) return;
+
+                const url = NETBOX_BASE + netboxId + '/';
+                body.classList.add('netbox-link');
+                body.setAttribute('role', 'link');
+                body.setAttribute('tabindex', '0');
+                body.setAttribute('title', 'Open Rack ' + rackNo + ' in NetBox');
+
+                const open = function() { window.open(url, '_blank', 'noopener'); };
+                body.addEventListener('click', open);
+                body.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        open();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

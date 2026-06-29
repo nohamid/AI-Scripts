@@ -309,6 +309,134 @@
             padding: 20px;
         }
 
+        /* Interactive PDU Access Map */
+        .pdu-map-section {
+            margin-top: 40px;
+        }
+
+        .pdu-map-section .map-hint {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .pdu-map {
+            display: flex;
+            gap: 48px;
+            justify-content: center;
+            flex-wrap: wrap;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px 24px;
+            box-shadow: 0 1px 3px rgba(28, 29, 43, 0.06);
+        }
+
+        .map-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 240px;
+        }
+
+        .map-col-label {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .map-rack {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #000000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+        }
+
+        .map-rack-body {
+            padding: 12px 8px;
+            text-align: center;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .map-rack-no {
+            display: block;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .map-rack-tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.92;
+        }
+
+        .map-rack.bwi   .map-rack-body { background: #cc2222; }
+        .map-rack.ucs   .map-rack-body { background: #2f8f3e; }
+        .map-rack.itz   .map-rack-body { background: #b5367a; }
+        .map-rack.sdwan .map-rack-body { background: #8324a8; }
+        .map-rack.test  .map-rack-body { background: #566472; }
+        .map-rack.bdbos .map-rack-body { background: #1a6fc4; }
+        .map-rack.exdc  .map-rack-body { background: #0e7c86; }
+        .map-rack.spare .map-rack-body {
+            background: var(--surface-dim);
+            color: var(--text-light);
+        }
+        .map-rack.spare .map-rack-tag { opacity: 1; }
+
+        .pdu-strip {
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 6px 0;
+            cursor: pointer;
+            transition: filter 0.12s ease, transform 0.12s ease;
+        }
+
+        .pdu-strip.pdu1 { background: #44474f; }
+        .pdu-strip.pdu2 { background: #44474f; }
+        .pdu-strip:hover { filter: brightness(1.18); }
+        .pdu-strip:active { transform: translateY(1px); }
+
+        .pdu-strip.placeholder {
+            background: #c2c7d0;
+            cursor: default;
+            pointer-events: none;
+        }
+        .pdu-strip.placeholder::after { content: "\00a0"; }
+        .pdu-strip.placeholder:hover { filter: none; }
+
+        .map-legend {
+            display: flex;
+            gap: 28px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .map-legend i.dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            vertical-align: -2px;
+            margin-right: 6px;
+        }
+
+        .map-legend i.dot.pdu1 { background: #43a047; }
+        .map-legend i.dot.pdu2 { background: #fb8c00; }
+
         @media (max-width: 768px) {
             .pdu-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -363,6 +491,143 @@
             <div class="stat-card">
                 <div class="stat-number">CNS LAB FKF</div>
                 <div class="stat-label">Site: Cisco Office Eschborn</div>
+            </div>
+        </div>
+
+        <!-- Interactive PDU Access Map -->
+        <div class="pdu-map-section">
+            <h2 style="color: var(--accent-blue); margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid var(--accent-blue);">🗺️ PDU Access Map</h2>
+            <p class="map-hint">Click a <strong>PDU 1</strong> (left strip) or <strong>PDU 2</strong> (right strip) on any rack to open that PDU's control page in a new tab.</p>
+            <div class="pdu-map">
+                <!-- ROW A -->
+                <div class="map-col">
+                    <div class="map-col-label">ROW A</div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu1-1.cisco.com" target="_blank" rel="noopener" title="Rack 01 · PDU 1 · fkf-lab-pdu1-1.cisco.com · 10.49.208.98">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">01</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu1-2.cisco.com" target="_blank" rel="noopener" title="Rack 01 · PDU 2 · fkf-lab-pdu1-2.cisco.com · 10.49.208.99">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu2-1.cisco.com" target="_blank" rel="noopener" title="Rack 02 · PDU 1 · fkf-lab-pdu2-1.cisco.com · 10.49.208.118">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">02</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu2-2.cisco.com" target="_blank" rel="noopener" title="Rack 02 · PDU 2 · fkf-lab-pdu2-2.cisco.com · 10.49.208.119">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu3-1.cisco.com" target="_blank" rel="noopener" title="Rack 03 · PDU 1 · fkf-lab-pdu3-1.cisco.com · 10.49.208.120">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">03</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu3-2.cisco.com" target="_blank" rel="noopener" title="Rack 03 · PDU 2 · fkf-lab-pdu3-2.cisco.com · 10.49.208.121">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu4-1.cisco.com" target="_blank" rel="noopener" title="Rack 04 · PDU 1 · fkf-lab-pdu4-1.cisco.com · 10.49.208.122">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">04</span><span class="map-rack-tag">BWI</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu4-2.cisco.com" target="_blank" rel="noopener" title="Rack 04 · PDU 2 · fkf-lab-pdu4-2.cisco.com · 10.49.208.123">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack bwi">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu5-1.cisco.com" target="_blank" rel="noopener" title="Rack 05 · PDU 1 · fkf-lab-pdu5-1.cisco.com · 10.49.208.115">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">05</span><span class="map-rack-tag">BWI</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack ucs">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu6-1.cisco.com" target="_blank" rel="noopener" title="Rack 06 · PDU 1 · fkf-lab-pdu6-1.cisco.com · 10.49.208.103">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">06</span><span class="map-rack-tag">UCS</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu6-2.cisco.com" target="_blank" rel="noopener" title="Rack 06 · PDU 2 · fkf-lab-pdu6-2.cisco.com · 10.49.208.104">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack ucs">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu7-1.cisco.com" target="_blank" rel="noopener" title="Rack 07 · PDU 1 · fkf-lab-pdu7-1.cisco.com · 10.49.208.100">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">07</span><span class="map-rack-tag">UCS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack spare">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">08</span><span class="map-rack-tag">SPARE</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack spare">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">09</span><span class="map-rack-tag">SPARE</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack spare">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">10</span><span class="map-rack-tag">SPARE</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+                </div>
+
+                <!-- ROW B -->
+                <div class="map-col">
+                    <div class="map-col-label">ROW B</div>
+
+                    <div class="map-rack itz">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">11</span><span class="map-rack-tag">ITZ</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu11-2.cisco.com" target="_blank" rel="noopener" title="Rack 11 · PDU 2 · fkf-lab-pdu11-2.cisco.com · 10.49.208.108">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack itz">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu12-1.cisco.com" target="_blank" rel="noopener" title="Rack 12 · PDU 1 · fkf-lab-pdu12-1.cisco.com · 10.49.208.107">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">12</span><span class="map-rack-tag">ITZ</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu12-2.cisco.com" target="_blank" rel="noopener" title="Rack 12 · PDU 2 · fkf-lab-pdu12-2.cisco.com · 10.49.208.108">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack sdwan">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu13-1.cisco.com" target="_blank" rel="noopener" title="Rack 13 · PDU 1 · fkf-lab-pdu13-1.cisco.com · 10.49.208.101">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">13</span><span class="map-rack-tag">SD-WAN</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu13-2.cisco.com" target="_blank" rel="noopener" title="Rack 13 · PDU 2 · fkf-lab-pdu13-2.cisco.com · 10.49.208.102">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack test">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu14-1.cisco.com" target="_blank" rel="noopener" title="Rack 14 · PDU 1 · fkf-lab-pdu14-1.cisco.com · 10.49.208.105">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">14</span><span class="map-rack-tag">TEST</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu14-2.cisco.com" target="_blank" rel="noopener" title="Rack 14 · PDU 2 · fkf-lab-pdu14-2.cisco.com · 10.49.208.106">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack ucs">
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                        <div class="map-rack-body"><span class="map-rack-no">15</span><span class="map-rack-tag">UCS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack bdbos">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu16-1.cisco.com" target="_blank" rel="noopener" title="Rack 16 · PDU 1 · fkf-lab-pdu16-1.cisco.com · 10.49.208.110">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">16</span><span class="map-rack-tag">BDBOS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack bdbos">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu17-1.cisco.com" target="_blank" rel="noopener" title="Rack 17 · PDU 1 · fkf-lab-pdu17-1.cisco.com · 10.49.208.110">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">17</span><span class="map-rack-tag">BDBOS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack bdbos">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu18-1.cisco.com" target="_blank" rel="noopener" title="Rack 18 · PDU 1 · fkf-lab-pdu18-1.cisco.com · 10.49.208.110">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">18</span><span class="map-rack-tag">BDBOS</span></div>
+                        <div class="pdu-strip placeholder" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="map-rack exdc">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu19-1.cisco.com" target="_blank" rel="noopener" title="Rack 19 · PDU 1 · fkf-lab-pdu19-1.cisco.com · 10.49.208.111">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">19</span><span class="map-rack-tag">EX DC</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu19-2.cisco.com" target="_blank" rel="noopener" title="Rack 19 · PDU 2 · fkf-lab-pdu19-2.cisco.com · 10.49.208.112">PDU 2</a>
+                    </div>
+
+                    <div class="map-rack exdc">
+                        <a class="pdu-strip pdu1" href="http://fkf-lab-pdu20-1.cisco.com" target="_blank" rel="noopener" title="Rack 20 · PDU 1 · fkf-lab-pdu20-1.cisco.com · 10.49.208.113">PDU 1</a>
+                        <div class="map-rack-body"><span class="map-rack-no">20</span><span class="map-rack-tag">EX DC</span></div>
+                        <a class="pdu-strip pdu2" href="http://fkf-lab-pdu20-2.cisco.com" target="_blank" rel="noopener" title="Rack 20 · PDU 2 · fkf-lab-pdu20-2.cisco.com · 10.49.208.114">PDU 2</a>
+                    </div>
+                </div>
             </div>
         </div>
 

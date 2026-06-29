@@ -14,6 +14,7 @@ import tempfile
 import re
 import json
 import base64
+import random
 import threading
 import time as _time
 logging.basicConfig(level=logging.INFO)
@@ -121,6 +122,23 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Login screen background wallpapers (rotated on every access)
+WALLPAPER_DIR = Path(__file__).parent / 'static' / 'wallpapers'
+WALLPAPER_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+
+def get_random_wallpaper():
+    """Return a static-relative path to a random login wallpaper, or None."""
+    try:
+        wallpapers = [
+            f.name for f in WALLPAPER_DIR.iterdir()
+            if f.is_file() and f.suffix.lower() in WALLPAPER_EXTENSIONS
+        ]
+    except FileNotFoundError:
+        wallpapers = []
+    if not wallpapers:
+        return None
+    return 'wallpapers/' + random.choice(wallpapers)
+
 @app.route('/')
 def index():
     if 'user' in session:
@@ -137,9 +155,10 @@ def login():
             session['user'] = username
             return redirect(url_for('dashboard'))
         else:
-            return render_template('login.html', error='Invalid username or password')
+            return render_template('login.html', error='Invalid username or password',
+                                   wallpaper=get_random_wallpaper())
     
-    return render_template('login.html')
+    return render_template('login.html', wallpaper=get_random_wallpaper())
 
 @app.route('/dashboard')
 @login_required
@@ -158,6 +177,11 @@ def pdu_management():
 @login_required
 def floorplan():
     return render_template('floorplan.html')
+
+@app.route('/beta')
+@login_required
+def beta():
+    return render_template('beta.html')
 
 @app.route('/run-script/<script_id>', methods=['POST'])
 @login_required

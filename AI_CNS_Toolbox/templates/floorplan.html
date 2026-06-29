@@ -30,12 +30,13 @@
             --accent-blue: #0d6ca3;
 
             /* Rack category colours */
-            --cat-bwi: #1a6fc4;
+            --cat-bwi: #cc2222;
             --cat-ucs: #2f8f3e;
+            --cat-collab: #2f8f3e;
             --cat-itz: #ef8a17;
             --cat-sdwan: #8324a8;
             --cat-test: #566472;
-            --cat-bdbos: #cc2222;
+            --cat-bdbos: #1a6fc4;
             --cat-bench: #ab8d7c;
             --room-fill: #dbe7f5;
             --room-border: #6c9bd2;
@@ -227,7 +228,7 @@
         /* Entry door */
         .entry-label {
             position: absolute;
-            top: 64px;
+            top: 96px;
             left: -2px;
             writing-mode: vertical-rl;
             transform: rotate(180deg);
@@ -240,7 +241,7 @@
         /* Door swing symbol: vertical leaf + quarter-circle arc */
         .entry-door {
             position: absolute;
-            top: 14px;
+            top: 84px;
             left: 16px;
             width: 40px;
             height: 40px;
@@ -299,9 +300,10 @@
             letter-spacing: 0.4px;
         }
 
-        .rack.bwi   { background: var(--cat-bwi); }
-        .rack.ucs   { background: var(--cat-ucs); }
-        .rack.itz   { background: var(--cat-itz); }
+        .rack.bwi    { background: var(--cat-bwi); }
+        .rack.ucs    { background: var(--cat-ucs); }
+        .rack.collab { background: var(--cat-collab); }
+        .rack.itz    { background: var(--cat-itz); }
         .rack.sdwan { background: var(--cat-sdwan); }
         .rack.test  { background: var(--cat-test); }
         .rack.bdbos { background: var(--cat-bdbos); }
@@ -341,9 +343,13 @@
         .benches {
             display: flex;
             align-items: flex-end;
-            justify-content: space-between;
             padding: 16px 8px 0;
             border-top: 2px dashed var(--room-border);
+        }
+
+        .benches .table-box {
+            margin-left: auto;
+            margin-right: 8%;
         }
 
         .bench-group {
@@ -501,14 +507,13 @@
                     <div class="rack-rows">
                         <!-- ROW A -->
                         <div class="rack-column">
-                            <div class="row-label">ROW A</div>
                             <div class="rack bwi"><span class="rack-no">01</span><span class="rack-tag">BWI</span></div>
                             <div class="rack bwi"><span class="rack-no">02</span><span class="rack-tag">BWI</span></div>
                             <div class="rack bwi"><span class="rack-no">03</span><span class="rack-tag">BWI</span></div>
                             <div class="rack bwi"><span class="rack-no">04</span><span class="rack-tag">BWI</span></div>
                             <div class="rack bwi"><span class="rack-no">05</span><span class="rack-tag">BWI</span></div>
-                            <div class="rack ucs"><span class="rack-no">06</span><span class="rack-tag">UCS</span></div>
-                            <div class="rack ucs"><span class="rack-no">07</span><span class="rack-tag">UCS</span></div>
+                            <div class="rack collab"><span class="rack-no">06</span><span class="rack-tag">Collab</span></div>
+                            <div class="rack collab"><span class="rack-no">07</span><span class="rack-tag">Collab</span></div>
                             <div class="rack spare"><span class="rack-no">08</span><span class="rack-tag">SPARE</span></div>
                             <div class="rack spare"><span class="rack-no">09</span><span class="rack-tag">SPARE</span></div>
                             <div class="rack spare"><span class="rack-no">10</span><span class="rack-tag">SPARE</span></div>
@@ -516,12 +521,11 @@
 
                         <!-- ROW B -->
                         <div class="rack-column">
-                            <div class="row-label">ROW B</div>
                             <div class="rack itz"><span class="rack-no">11</span><span class="rack-tag">ITZ</span></div>
                             <div class="rack itz"><span class="rack-no">12</span><span class="rack-tag">ITZ</span></div>
                             <div class="rack sdwan"><span class="rack-no">13</span><span class="rack-tag">SD-WAN</span></div>
                             <div class="rack test"><span class="rack-no">14</span><span class="rack-tag">Test</span></div>
-                            <div class="rack spare"><span class="rack-no">15</span><span class="rack-tag">SPARE</span></div>
+                            <div class="rack spare"><span class="rack-no">15</span><span class="rack-tag">UCS</span></div>
                             <div class="rack bdbos"><span class="rack-no">16</span><span class="rack-tag">BDBOS</span></div>
                             <div class="rack bdbos"><span class="rack-no">17</span><span class="rack-tag">BDBOS</span></div>
                             <div class="rack bdbos"><span class="rack-no">18</span><span class="rack-tag">BDBOS</span></div>
