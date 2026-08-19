@@ -7,6 +7,7 @@ import io
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
+from werkzeug.utils import secure_filename
 import logging
 from ftp_backup_module import backup_device_config
 from scp_upload_module import upload_ios_image, DEFAULT_DESTINATIONS
@@ -17,6 +18,7 @@ import base64
 import random
 import threading
 import time as _time
+from uuid import uuid4
 logging.basicConfig(level=logging.INFO)
 
 # Add the Self Written Scripts folder to path
@@ -125,6 +127,78 @@ def login_required(f):
 # Login screen background wallpapers (rotated on every access)
 WALLPAPER_DIR = Path(__file__).parent / 'static' / 'wallpapers'
 WALLPAPER_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+VM_DIRECTORY_FILE = Path(__file__).parent / 'data' / 'vm_directory.json'
+VM_DIRECTORY_LOCK = threading.Lock()
+VM_ICON_DIR = Path(__file__).parent / 'static' / 'vm_icons'
+VM_ICON_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'}
+
+def _load_vm_entries_unlocked():
+    try:
+        with VM_DIRECTORY_FILE.open('r', encoding='utf-8') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        return []
+    except json.JSONDecodeError:
+        logging.exception('VM directory data file is not valid JSON')
+        return []
+
+    if not isinstance(data, list):
+        return []
+    return data
+
+def load_vm_entries():
+    with VM_DIRECTORY_LOCK:
+        return _load_vm_entries_unlocked()
+
+def _save_vm_entries_unlocked(vm_entries):
+    VM_DIRECTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    temp_file = VM_DIRECTORY_FILE.with_suffix('.json.tmp')
+    with temp_file.open('w', encoding='utf-8') as file:
+        json.dump(vm_entries, file, indent=2)
+        file.write('\n')
+    temp_file.replace(VM_DIRECTORY_FILE)
+
+def get_vm_form_data(form):
+    vm_data = {
+        'name': (form.get('name') or '').strip(),
+        'link': (form.get('link') or '').strip(),
+        'note': (form.get('note') or '').strip()
+    }
+    errors = []
+
+    if not vm_data['name']:
+        errors.append('VM name is required.')
+    if not vm_data['link']:
+        errors.append('VM link is required.')
+    if vm_data['link'].lower().startswith(('javascript:', 'data:', 'vbscript:')):
+        errors.append('Please use a normal web link for the VM.')
+
+    return vm_data, errors
+
+def save_vm_icon(file_storage):
+    """Save an uploaded VM icon and return its static-relative path, or None."""
+    if not file_storage or not file_storage.filename:
+        return None
+
+    extension = Path(secure_filename(file_storage.filename)).suffix.lower()
+    if extension not in VM_ICON_EXTENSIONS:
+        return None
+
+    VM_ICON_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f'{uuid4().hex}{extension}'
+    file_storage.save(VM_ICON_DIR / filename)
+    return 'vm_icons/' + filename
+
+def delete_vm_icon(icon_path):
+    """Remove a previously saved VM icon file, if it exists within VM_ICON_DIR."""
+    if not icon_path:
+        return
+    icon_file = Path(__file__).parent / 'static' / icon_path
+    try:
+        if icon_file.is_file() and VM_ICON_DIR in icon_file.parents:
+            icon_file.unlink()
+    except OSError:
+        logging.exception('Failed to delete VM icon file: %s', icon_path)
 
 def get_random_wallpaper():
     """Return a static-relative path to a random login wallpaper, or None."""
@@ -182,6 +256,117 @@ def floorplan():
 @login_required
 def beta():
     return render_template('beta.html')
+
+@app.route('/vm-directory', methods=['GET', 'POST'])
+@login_required
+def vm_directory():
+    if request.method == 'POST':
+        vm_data, errors = get_vm_form_data(request.form)
+
+        if errors:
+            return render_template('vm_directory.html',
+                                   vm_entries=load_vm_entries(),
+                                   username=session.get('user'),
+                                   error=' '.join(errors),
+                                   form_values=vm_data)
+
+        with VM_DIRECTORY_LOCK:
+            vm_entries = _load_vm_entries_unlocked()
+            vm_entries.append({
+                'id': uuid4().hex,
+                'name': vm_data['name'],
+                'link': vm_data['link'],
+                'note': vm_data['note'],
+                'icon': save_vm_icon(request.files.get('icon')),
+                'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                'updated_by': session.get('user', 'team')
+            })
+            _save_vm_entries_unlocked(vm_entries)
+
+        return redirect(url_for('vm_directory'))
+
+    return render_template('vm_directory.html',
+                           vm_entries=load_vm_entries(),
+                           username=session.get('user'),
+                           form_values={})
+
+@app.route('/vm-directory/<vm_id>/update', methods=['POST'])
+@login_required
+def update_vm_entry(vm_id):
+    vm_data, errors = get_vm_form_data(request.form)
+
+    if errors:
+        return render_template('vm_directory.html',
+                               vm_entries=load_vm_entries(),
+                               username=session.get('user'),
+                               error=' '.join(errors),
+                               form_values=vm_data,
+                               edit_vm_id=vm_id)
+
+    with VM_DIRECTORY_LOCK:
+        vm_entries = _load_vm_entries_unlocked()
+        for vm_entry in vm_entries:
+            if vm_entry.get('id') == vm_id:
+                new_icon = save_vm_icon(request.files.get('icon'))
+                if request.form.get('remove_icon') == '1' and not new_icon:
+                    delete_vm_icon(vm_entry.get('icon'))
+                    new_icon = None
+                elif new_icon:
+                    delete_vm_icon(vm_entry.get('icon'))
+                else:
+                    new_icon = vm_entry.get('icon')
+
+                vm_entry.update({
+                    'name': vm_data['name'],
+                    'link': vm_data['link'],
+                    'note': vm_data['note'],
+                    'icon': new_icon,
+                    'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                    'updated_by': session.get('user', 'team')
+                })
+                _save_vm_entries_unlocked(vm_entries)
+                return redirect(url_for('vm_directory'))
+
+    return render_template('vm_directory.html',
+                           vm_entries=load_vm_entries(),
+                           username=session.get('user'),
+                           error='The VM entry could not be found.',
+                           form_values={})
+
+@app.route('/vm-directory/<vm_id>/move/<direction>', methods=['POST'])
+@login_required
+def move_vm_entry(vm_id, direction):
+    if direction not in {'up', 'down'}:
+        return redirect(url_for('vm_directory'))
+
+    with VM_DIRECTORY_LOCK:
+        vm_entries = _load_vm_entries_unlocked()
+        current_index = next((index for index, item in enumerate(vm_entries) if item.get('id') == vm_id), None)
+
+        if current_index is None:
+            return redirect(url_for('vm_directory'))
+
+        target_index = current_index - 1 if direction == 'up' else current_index + 1
+        if 0 <= target_index < len(vm_entries):
+            vm_entries[current_index], vm_entries[target_index] = vm_entries[target_index], vm_entries[current_index]
+            _save_vm_entries_unlocked(vm_entries)
+
+    return redirect(url_for('vm_directory'))
+
+@app.route('/vm-directory/<vm_id>/delete', methods=['POST'])
+@login_required
+def delete_vm_entry(vm_id):
+    with VM_DIRECTORY_LOCK:
+        vm_entries = _load_vm_entries_unlocked()
+        deleted_entries = [vm_entry for vm_entry in vm_entries if vm_entry.get('id') == vm_id]
+        filtered_entries = [vm_entry for vm_entry in vm_entries if vm_entry.get('id') != vm_id]
+
+        if len(filtered_entries) != len(vm_entries):
+            _save_vm_entries_unlocked(filtered_entries)
+            for vm_entry in deleted_entries:
+                delete_vm_icon(vm_entry.get('icon'))
+
+    return redirect(url_for('vm_directory'))
 
 @app.route('/run-script/<script_id>', methods=['POST'])
 @login_required

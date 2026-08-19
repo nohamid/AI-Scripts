@@ -1137,6 +1137,10 @@
             <span class="material-icons-round">library_books</span>
             Lab Resources
         </a>
+        <a class="sidebar-item" href="{{ url_for('vm_directory') }}">
+            <span class="material-icons-round">dns</span>
+            VM Directory
+        </a>
         <a class="sidebar-item" href="{{ url_for('pdu_management') }}">
             <span class="material-icons-round">power</span>
             Power / PDU
@@ -1231,6 +1235,21 @@
                 <h2>Lab Resources</h2>
             </div>
             <div class="resources-grid">
+                <div class="resource-card">
+                    <div class="resource-header">
+                        <div class="resource-icon-wrapper">VM</div>
+                        <div class="resource-title">Team VM Directory</div>
+                    </div>
+                    <p class="resource-description">
+                        Open, add, and edit the virtual machines used by the CNS Lab team from one shared place.
+                    </p>
+                    <div class="resource-actions">
+                        <a href="{{ url_for('vm_directory') }}" class="resource-link">
+                            <span class="material-icons-round" style="font-size: 18px;">dns</span>
+                            Open VM Directory
+                        </a>
+                    </div>
+                </div>
                 <div class="resource-card">
                     <div class="resource-header">
                         <div class="resource-icon-wrapper">📊</div>
