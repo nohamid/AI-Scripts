@@ -22,6 +22,7 @@
             --cisco-green: #3aa755;
             --cisco-red: #cc2b2b;
             --navbar-height: 64px;
+            --sidebar-width: 280px;
 
             --bg-card: #ffffff;
             --surface-dim: #f5f6f8;
@@ -153,9 +154,74 @@
             border-color: var(--cisco-blue);
         }
 
+        .app-sidebar {
+            position: fixed;
+            top: var(--navbar-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 90;
+            overflow-y: auto;
+        }
+
+        .sidebar-section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-secondary);
+            padding: 16px 12px 6px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.18s ease;
+        }
+
+        .sidebar-item .material-icons-round {
+            font-size: 21px;
+        }
+
+        .sidebar-item:hover {
+            background: var(--surface-dim);
+            color: var(--text-primary);
+        }
+
+        .sidebar-item.active {
+            background: var(--cisco-blue-soft);
+            color: var(--accent-blue);
+            border-left-color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: none;
+            width: calc(100% - var(--sidebar-width));
+            margin: 0 0 0 var(--sidebar-width);
             padding: calc(var(--navbar-height) + 28px) 36px 28px;
         }
 
@@ -437,7 +503,19 @@
         .map-legend i.dot.pdu1 { background: #43a047; }
         .map-legend i.dot.pdu2 { background: #fb8c00; }
 
+        @media (max-width: 900px) {
+            .app-sidebar {
+                display: none;
+            }
+
+            .container {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+
         @media (max-width: 768px) {
+
             .pdu-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
@@ -472,6 +550,45 @@
             </a>
         </div>
     </nav>
+
+    <aside class="app-sidebar">
+        <a class="sidebar-item" href="{{ url_for('dashboard') }}">
+            <span class="material-icons-round">dashboard</span>
+            Dashboard
+        </a>
+        <a class="sidebar-item" href="{{ url_for('dashboard') }}#scripts-section">
+            <span class="material-icons-round">terminal</span>
+            Automation
+        </a>
+        <a class="sidebar-item" href="{{ url_for('dashboard') }}#resources-section">
+            <span class="material-icons-round">library_books</span>
+            Lab Resources
+        </a>
+        <a class="sidebar-item active" href="{{ url_for('pdu_management') }}">
+            <span class="material-icons-round">power</span>
+            Power / PDU
+        </a>
+        <a class="sidebar-item" href="{{ url_for('floorplan') }}">
+            <span class="material-icons-round">grid_view</span>
+            Lab Floorplan
+        </a>
+        <a class="sidebar-item" href="{{ url_for('beta') }}">
+            <span class="material-icons-round">science</span>
+            Lab Console (Beta)
+        </a>
+        <div class="sidebar-section-label">Account</div>
+        <div class="sidebar-item" onclick="toggleDarkMode()">
+            <span class="material-icons-round">brightness_6</span>
+            Toggle Theme
+        </div>
+        <a class="sidebar-item" href="{{ url_for('logout') }}">
+            <span class="material-icons-round">logout</span>
+            Sign Out
+        </a>
+        <div class="sidebar-footer">
+            Cisco CX &middot; CNS Lab<br>FKF3 Automation Toolbox
+        </div>
+    </aside>
 
     <div class="container">
         <div class="header">
