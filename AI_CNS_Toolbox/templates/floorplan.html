@@ -679,19 +679,13 @@
                 document.getElementById('darkModeIcon').textContent = 'light_mode';
             }
 
-            // Interactive racks: map rack number -> NetBox rack ID.
-            // Add more entries here as racks are onboarded into NetBox.
-            const NETBOX_BASE = 'http://10.49.208.43:8000/dcim/racks/';
-            const RACK_NETBOX_IDS = {
-                '14': 1
-            };
+            const NETBOX_BASE = 'http://fkf-cns-spectre.cisco.com/dcim/racks/';
 
             document.querySelectorAll('.rack').forEach(function(rack) {
                 const noEl = rack.querySelector('.rack-no');
                 if (!noEl) return;
                 const rackNo = noEl.textContent.trim();
-                const netboxId = RACK_NETBOX_IDS[rackNo];
-                if (netboxId === undefined) return;
+                const netboxId = parseInt(rackNo, 10) + 1;
 
                 const url = NETBOX_BASE + netboxId + '/';
                 rack.classList.add('clickable');
