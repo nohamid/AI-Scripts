@@ -1531,6 +1531,152 @@
         </div>
     </div>
 
+    <!-- NetBox Device Types Modal -->
+    <div id="netboxDeviceTypesModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>
+                    <span class="material-icons-round">dns</span>
+                    <span id="netboxDeviceTypesModalTitle">NetBox Device Types</span>
+                </h2>
+                <button class="close-btn" onclick="closeNetboxModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: authenticate -->
+                <div id="netboxAuthStep">
+                    <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                        Sign in to the NetBox instance before device types can be read or imported.
+                        Your credentials are exchanged for a temporary API token that is kept on the
+                        server for one hour and never stored in the browser.
+                    </p>
+                    <div class="form-group">
+                        <label>NetBox URL</label>
+                        <input type="text" id="netboxUrlInput" value="http://fkf-cns-spectre.cisco.com" placeholder="http://fkf-cns-spectre.cisco.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="netboxUsernameInput" autocomplete="username" placeholder="NetBox username">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="netboxPasswordInput" autocomplete="current-password" placeholder="NetBox password">
+                    </div>
+                    <div class="form-group">
+                        <label>API Token <span style="color: var(--md-on-surface-variant); font-weight: 400;">(optional)</span></label>
+                        <input type="password" id="netboxTokenInput" autocomplete="off" placeholder="Use a token instead of username and password">
+                        <p class="form-hint">Accepts a legacy token or a NetBox 4.5 <code>nbt_&hellip;</code> token. If a token is entered, username and password are ignored</p>
+                    </div>
+                    <p id="netboxAuthError" style="display: none; color: #d32f2f; margin-top: 12px;"></p>
+                </div>
+
+                <!-- Step 2: compare and import -->
+                <div id="netboxSyncStep" style="display: none;">
+                    <p id="netboxStatusLine" style="color: var(--md-on-surface-variant); margin-bottom: 16px;"></p>
+                    <div id="netboxResults"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeNetboxModal()">Close</button>
+                <button class="btn btn-primary" id="netboxAuthBtn" onclick="submitNetboxAuth()">
+                    <span class="material-icons-round" style="font-size: 18px;">login</span>
+                    Authenticate
+                </button>
+                <button class="btn btn-primary" id="netboxCheckBtn" style="display: none;" onclick="runNetboxCheck()">
+                    <span class="material-icons-round" style="font-size: 18px;">sync</span>
+                    Check for new device types
+                </button>
+                <button class="btn btn-primary" id="netboxImportBtn" style="display: none;" onclick="submitNetboxImport()">
+                    <span class="material-icons-round" style="font-size: 18px;">cloud_download</span>
+                    Import selected
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboard Device to NetBox Modal -->
+    <div id="netboxOnboardModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>
+                    <span class="material-icons-round">router</span>
+                    <span id="netboxOnboardModalTitle">Onboard Device to NetBox</span>
+                </h2>
+                <button class="close-btn" onclick="closeOnboardModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: NetBox authentication -->
+                <div id="onboardAuthStep">
+                    <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                        Sign in to NetBox before a device can be created.
+                    </p>
+                    <div class="form-group">
+                        <label>NetBox URL</label>
+                        <input type="text" id="onboardNetboxUrl" value="http://fkf-cns-spectre.cisco.com">
+                    </div>
+                    <div class="form-group">
+                        <label>NetBox Username</label>
+                        <input type="text" id="onboardNetboxUser" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label>NetBox Password</label>
+                        <input type="password" id="onboardNetboxPassword" autocomplete="current-password">
+                    </div>
+                    <p id="onboardAuthError" style="display: none; color: #d32f2f; margin-top: 12px;"></p>
+                </div>
+
+                <!-- Step 2: SSH to the device -->
+                <div id="onboardSshStep" style="display: none;">
+                    <p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">
+                        Connect to the device over SSH. Hostname, device type and the management
+                        interface are read from the device.
+                    </p>
+                    <div class="form-group">
+                        <label>Management IP Address</label>
+                        <input type="text" id="onboardDeviceIp" placeholder="10.49.x.x">
+                        <p class="form-hint">Management addresses always start with 10.49.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Device Username</label>
+                        <input type="text" id="onboardDeviceUser" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Device Password</label>
+                        <input type="password" id="onboardDevicePassword" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Enable Secret <span style="color: var(--md-on-surface-variant); font-weight: 400;">(optional)</span></label>
+                        <input type="password" id="onboardDeviceSecret" autocomplete="off">
+                    </div>
+                    <p id="onboardSshError" style="display: none; color: #d32f2f; margin-top: 12px;"></p>
+                </div>
+
+                <!-- Step 3: review and create -->
+                <div id="onboardReviewStep" style="display: none;">
+                    <div id="onboardReview"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeOnboardModal()">Close</button>
+                <button class="btn btn-primary" id="onboardAuthBtn" onclick="submitOnboardAuth()">
+                    <span class="material-icons-round" style="font-size: 18px;">login</span>
+                    Authenticate
+                </button>
+                <button class="btn btn-primary" id="onboardConnectBtn" style="display: none;" onclick="submitOnboardDiscover()">
+                    <span class="material-icons-round" style="font-size: 18px;">cable</span>
+                    Connect &amp; Read Device
+                </button>
+                <button class="btn btn-primary" id="onboardCreateBtn" style="display: none;" onclick="submitOnboardCreate()">
+                    <span class="material-icons-round" style="font-size: 18px;">add_circle</span>
+                    Create in NetBox
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Result Modal -->
     <div id="resultModal" class="modal">
         <div class="modal-content large">
@@ -1613,6 +1759,14 @@
             }
             if (scriptId === 'ios_upload') {
                 showIosUploadModal(scriptId, scriptName);
+                return;
+            }
+            if (scriptId === 'netbox_devicetypes') {
+                showNetboxModal(scriptId, scriptName);
+                return;
+            }
+            if (scriptId === 'netbox_onboard') {
+                showOnboardModal(scriptId, scriptName);
                 return;
             }
 
@@ -1749,6 +1903,454 @@
             .catch(error => {
                 hideLoadingOverlay();
                 showResultModal({ status: 'error', message: 'An error occurred: ' + error.message }, 'CNS Health Check');
+            });
+        }
+
+        // ---- NetBox device types ------------------------------------------
+        let netboxMissing = [];
+
+        function netboxEscape(value) {
+            const div = document.createElement('div');
+            div.textContent = value === null || value === undefined ? '' : String(value);
+            return div.innerHTML;
+        }
+
+        function netboxSessionInfo() {
+            return fetch('{{ url_for("netbox_session") }}')
+                .then(response => response.json())
+                .catch(() => ({ authenticated: false, mode: 'none' }));
+        }
+
+        function showNetboxModal(scriptId, scriptName) {
+            document.getElementById('netboxDeviceTypesModalTitle').textContent = scriptName;
+            document.getElementById('netboxDeviceTypesModal').classList.add('show');
+            resetNetboxModal();
+            netboxSessionInfo().then(info => {
+                if (!info.authenticated) {
+                    document.getElementById('netboxUsernameInput').focus();
+                    return;
+                }
+                document.getElementById('netboxAuthStep').style.display = 'none';
+                document.getElementById('netboxAuthBtn').style.display = 'none';
+                document.getElementById('netboxSyncStep').style.display = '';
+                document.getElementById('netboxCheckBtn').style.display = '';
+                document.getElementById('netboxStatusLine').textContent =
+                    'Connected to ' + info.url + ' (NetBox ' + info.netbox_version + ')' +
+                    (info.mode === 'service' ? ' using the Skynet service account.' : '.');
+                runNetboxCheck();
+            });
+        }
+
+        function resetNetboxModal() {
+            netboxMissing = [];
+            document.getElementById('netboxAuthStep').style.display = '';
+            document.getElementById('netboxSyncStep').style.display = 'none';
+            document.getElementById('netboxAuthBtn').style.display = '';
+            document.getElementById('netboxCheckBtn').style.display = 'none';
+            document.getElementById('netboxImportBtn').style.display = 'none';
+            document.getElementById('netboxAuthError').style.display = 'none';
+            document.getElementById('netboxResults').innerHTML = '';
+            document.getElementById('netboxPasswordInput').value = '';
+            document.getElementById('netboxTokenInput').value = '';
+        }
+
+        function closeNetboxModal() {
+            document.getElementById('netboxDeviceTypesModal').classList.remove('show');
+            resetNetboxModal();
+        }
+
+        function submitNetboxAuth() {
+            const url = document.getElementById('netboxUrlInput').value.trim();
+            const username = document.getElementById('netboxUsernameInput').value.trim();
+            const password = document.getElementById('netboxPasswordInput').value;
+            const token = document.getElementById('netboxTokenInput').value.trim();
+            const errorEl = document.getElementById('netboxAuthError');
+
+            if (!token && (!username || !password)) {
+                errorEl.textContent = 'Enter your NetBox username and password, or an API token.';
+                errorEl.style.display = '';
+                return;
+            }
+            errorEl.style.display = 'none';
+            showLoadingOverlay();
+
+            fetch('{{ url_for("netbox_auth") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url, username: username, password: password, token: token })
+            })
+            .then(async response => ({ ok: response.ok, data: await response.json() }))
+            .then(({ ok, data }) => {
+                hideLoadingOverlay();
+                document.getElementById('netboxPasswordInput').value = '';
+                document.getElementById('netboxTokenInput').value = '';
+                if (!ok) {
+                    errorEl.textContent = data.message || 'Authentication failed.';
+                    errorEl.style.display = '';
+                    return;
+                }
+                document.getElementById('netboxAuthStep').style.display = 'none';
+                document.getElementById('netboxAuthBtn').style.display = 'none';
+                document.getElementById('netboxSyncStep').style.display = '';
+                document.getElementById('netboxCheckBtn').style.display = '';
+                document.getElementById('netboxStatusLine').textContent =
+                    'Signed in to ' + data.url + ' (NetBox ' + data.netbox_version + ').';
+                runNetboxCheck();
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                errorEl.textContent = 'An error occurred: ' + error.message;
+                errorEl.style.display = '';
+            });
+        }
+
+        function runNetboxCheck() {
+            showLoadingOverlay();
+            document.getElementById('netboxImportBtn').style.display = 'none';
+            document.getElementById('netboxResults').innerHTML =
+                '<p style="color: var(--md-on-surface-variant);">Comparing NetBox with the devicetype-library&hellip;</p>';
+
+            fetch('{{ url_for("netbox_device_types_check") }}', { method: 'POST' })
+            .then(async response => ({ ok: response.ok, data: await response.json() }))
+            .then(({ ok, data }) => {
+                hideLoadingOverlay();
+                if (!ok) {
+                    if (data.status === 'auth_required') {
+                        resetNetboxModal();
+                        document.getElementById('netboxAuthError').textContent =
+                            'Your NetBox session expired. Please authenticate again.';
+                        document.getElementById('netboxAuthError').style.display = '';
+                        return;
+                    }
+                    document.getElementById('netboxResults').innerHTML =
+                        '<p style="color:#d32f2f;">' + netboxEscape(data.message || 'Check failed.') + '</p>';
+                    return;
+                }
+                renderNetboxResults(data);
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                document.getElementById('netboxResults').innerHTML =
+                    '<p style="color:#d32f2f;">An error occurred: ' + netboxEscape(error.message) + '</p>';
+            });
+        }
+
+        function renderNetboxResults(data) {
+            netboxMissing = data.missing || [];
+            const summary = netboxMissing.length + ' new device type(s) &middot; ' +
+                data.existing_count + ' already in NetBox &middot; ' +
+                data.library_count + ' in the library';
+
+            if (netboxMissing.length === 0) {
+                document.getElementById('netboxResults').innerHTML =
+                    '<p style="color: var(--md-on-surface-variant);">' + summary +
+                    '</p><p style="margin-top:12px;">NetBox is up to date &ndash; no new Cisco device types found.</p>';
+                document.getElementById('netboxImportBtn').style.display = 'none';
+                return;
+            }
+
+            let html = '<p style="color: var(--md-on-surface-variant); margin-bottom:12px;">' + summary + '</p>';
+            html += '<p style="margin-bottom:12px;">Select the device types you want to import into NetBox:</p>';
+            html += '<div style="display:flex; gap:12px; margin-bottom:12px;">' +
+                    '<button class="btn btn-secondary" type="button" onclick="netboxToggleAll(true)">Select all</button>' +
+                    '<button class="btn btn-secondary" type="button" onclick="netboxToggleAll(false)">Clear</button></div>';
+            html += '<div style="max-height:320px; overflow:auto; border:1px solid var(--md-outline, #ccc); border-radius:8px; padding:8px;">';
+            netboxMissing.forEach((item, index) => {
+                html += '<label style="display:flex; align-items:center; gap:10px; padding:6px 4px; cursor:pointer;">' +
+                        '<input type="checkbox" class="netbox-dt-check" data-index="' + index + '" checked>' +
+                        '<span><strong>' + netboxEscape(item.model) + '</strong>' +
+                        (item.part_number ? ' <span style="color: var(--md-on-surface-variant);">(' + netboxEscape(item.part_number) + ')</span>' : '') +
+                        ' <span style="color: var(--md-on-surface-variant);">&mdash; ' + netboxEscape(item.u_height) + 'U</span></span></label>';
+            });
+            html += '</div>';
+
+            document.getElementById('netboxResults').innerHTML = html;
+            document.getElementById('netboxImportBtn').style.display = '';
+        }
+
+        function netboxToggleAll(checked) {
+            document.querySelectorAll('.netbox-dt-check').forEach(cb => { cb.checked = checked; });
+        }
+
+        function submitNetboxImport() {
+            const files = Array.from(document.querySelectorAll('.netbox-dt-check'))
+                .filter(cb => cb.checked)
+                .map(cb => netboxMissing[parseInt(cb.dataset.index, 10)].file);
+
+            if (!files.length) {
+                alert('Select at least one device type to import.');
+                return;
+            }
+            if (!confirm('Import ' + files.length + ' device type(s) into NetBox?')) {
+                return;
+            }
+            showLoadingOverlay();
+
+            fetch('{{ url_for("netbox_device_types_import") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files: files })
+            })
+            .then(async response => ({ ok: response.ok, data: await response.json() }))
+            .then(({ ok, data }) => {
+                hideLoadingOverlay();
+                if (!ok) {
+                    document.getElementById('netboxResults').innerHTML =
+                        '<p style="color:#d32f2f;">' + netboxEscape(data.message || 'Import failed.') + '</p>';
+                    return;
+                }
+                let html = '<p>Imported ' + data.imported_count + ' of ' + files.length + ' device type(s).</p>';
+                if (data.imported.length) {
+                    html += '<ul style="margin:12px 0 0 18px;">' +
+                            data.imported.map(m => '<li>' + netboxEscape(m) + '</li>').join('') + '</ul>';
+                }
+                if (data.errors && data.errors.length) {
+                    html += '<p style="margin-top:12px; color:#d32f2f;">Failed:</p><ul style="margin-left:18px;">' +
+                            data.errors.map(e => '<li>' + netboxEscape(e) + '</li>').join('') + '</ul>';
+                }
+                document.getElementById('netboxResults').innerHTML = html;
+                document.getElementById('netboxImportBtn').style.display = 'none';
+                netboxMissing = [];
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                document.getElementById('netboxResults').innerHTML =
+                    '<p style="color:#d32f2f;">An error occurred: ' + netboxEscape(error.message) + '</p>';
+            });
+        }
+
+        // ---- Onboard device to NetBox --------------------------------------
+        let onboardDiscovered = null;
+
+        function showOnboardModal(scriptId, scriptName) {
+            document.getElementById('netboxOnboardModalTitle').textContent = scriptName;
+            document.getElementById('netboxOnboardModal').classList.add('show');
+            resetOnboardModal();
+            netboxSessionInfo().then(info => {
+                if (!info.authenticated) {
+                    document.getElementById('onboardNetboxUser').focus();
+                    return;
+                }
+                showOnboardStep('ssh');
+                document.getElementById('onboardDeviceIp').focus();
+            });
+        }
+
+        function resetOnboardModal() {
+            onboardDiscovered = null;
+            ['onboardAuthStep', 'onboardSshStep', 'onboardReviewStep'].forEach((id, i) => {
+                document.getElementById(id).style.display = i === 0 ? '' : 'none';
+            });
+            document.getElementById('onboardAuthBtn').style.display = '';
+            document.getElementById('onboardConnectBtn').style.display = 'none';
+            document.getElementById('onboardCreateBtn').style.display = 'none';
+            document.getElementById('onboardAuthError').style.display = 'none';
+            document.getElementById('onboardSshError').style.display = 'none';
+            document.getElementById('onboardReview').innerHTML = '';
+            ['onboardNetboxPassword', 'onboardDevicePassword', 'onboardDeviceSecret']
+                .forEach(id => { document.getElementById(id).value = ''; });
+        }
+
+        function closeOnboardModal() {
+            document.getElementById('netboxOnboardModal').classList.remove('show');
+            resetOnboardModal();
+        }
+
+        function showOnboardStep(step) {
+            document.getElementById('onboardAuthStep').style.display = step === 'auth' ? '' : 'none';
+            document.getElementById('onboardSshStep').style.display = step === 'ssh' ? '' : 'none';
+            document.getElementById('onboardReviewStep').style.display = step === 'review' ? '' : 'none';
+            document.getElementById('onboardAuthBtn').style.display = step === 'auth' ? '' : 'none';
+            document.getElementById('onboardConnectBtn').style.display = step === 'ssh' ? '' : 'none';
+            document.getElementById('onboardCreateBtn').style.display = step === 'review' ? '' : 'none';
+        }
+
+        function submitOnboardAuth() {
+            const errorEl = document.getElementById('onboardAuthError');
+            const payload = {
+                url: document.getElementById('onboardNetboxUrl').value.trim(),
+                username: document.getElementById('onboardNetboxUser').value.trim(),
+                password: document.getElementById('onboardNetboxPassword').value
+            };
+            if (!payload.username || !payload.password) {
+                errorEl.textContent = 'Enter your NetBox username and password.';
+                errorEl.style.display = '';
+                return;
+            }
+            errorEl.style.display = 'none';
+            showLoadingOverlay();
+
+            fetch('{{ url_for("netbox_auth") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => ({ ok: response.ok, data: await response.json() }))
+            .then(({ ok, data }) => {
+                hideLoadingOverlay();
+                document.getElementById('onboardNetboxPassword').value = '';
+                if (!ok) {
+                    errorEl.textContent = data.message || 'Authentication failed.';
+                    errorEl.style.display = '';
+                    return;
+                }
+                showOnboardStep('ssh');
+                document.getElementById('onboardDeviceIp').focus();
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                errorEl.textContent = 'An error occurred: ' + error.message;
+                errorEl.style.display = '';
+            });
+        }
+
+        function submitOnboardDiscover() {
+            const errorEl = document.getElementById('onboardSshError');
+            const payload = {
+                ip: document.getElementById('onboardDeviceIp').value.trim(),
+                username: document.getElementById('onboardDeviceUser').value.trim(),
+                password: document.getElementById('onboardDevicePassword').value,
+                secret: document.getElementById('onboardDeviceSecret').value
+            };
+            if (!payload.ip || !payload.username || !payload.password) {
+                errorEl.textContent = 'Enter the management IP, username and password.';
+                errorEl.style.display = '';
+                return;
+            }
+            if (!payload.ip.startsWith('10.49.')) {
+                errorEl.textContent = 'Management IP addresses must start with 10.49.';
+                errorEl.style.display = '';
+                return;
+            }
+            errorEl.style.display = 'none';
+            showLoadingOverlay();
+
+            fetch('{{ url_for("netbox_device_discover") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => ({ ok: response.ok, data: await response.json() }))
+            .then(({ ok, data }) => {
+                hideLoadingOverlay();
+                if (!ok) {
+                    if (data.status === 'auth_required') {
+                        resetOnboardModal();
+                        document.getElementById('onboardAuthError').textContent =
+                            'Your NetBox session expired. Please authenticate again.';
+                        document.getElementById('onboardAuthError').style.display = '';
+                        return;
+                    }
+                    errorEl.textContent = data.message || 'Could not read the device.';
+                    errorEl.style.display = '';
+                    return;
+                }
+                onboardDiscovered = data.device;
+                renderOnboardReview(data);
+                showOnboardStep('review');
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                errorEl.textContent = 'An error occurred: ' + error.message;
+                errorEl.style.display = '';
+            });
+        }
+
+        function renderOnboardReview(data) {
+            const d = data.device;
+            let html = '<p style="color: var(--md-on-surface-variant); margin-bottom: 20px;">' +
+                       'Review the details read from the device. Rack and position are assigned in NetBox.</p>';
+            html += '<div class="form-group"><label>Hostname</label>' +
+                    '<input type="text" id="onboardHostname" value="' + netboxEscape(d.hostname) + '"></div>';
+            html += '<div class="form-group"><label>Device Type</label>' +
+                    '<input type="text" id="onboardModel" value="' + netboxEscape(d.model) + '">' +
+                    '<p class="form-hint">Imported from the devicetype-library if it does not exist in NetBox yet</p></div>';
+            html += '<div class="form-group"><label>Device Role</label><select id="onboardRole">' +
+                    '<option value="">-- Select the device role --</option>' +
+                    data.roles.map(r => '<option value="' + netboxEscape(r.key) + '"' +
+                        (r.key === d.suggested_role ? ' selected' : '') + '>' +
+                        netboxEscape(r.name) + '</option>').join('') +
+                    '</select>' +
+                    (d.suggested_role
+                        ? '<p class="form-hint">Pre-selected from the device type &ndash; change it if it is wrong</p>'
+                        : '<p class="form-hint">The role could not be derived from the device type</p>') +
+                    '</div>';
+            html += '<div class="form-group"><label>Site</label><select id="onboardSite">' +
+                    data.sites.map(s => '<option value="' + s.id + '">' + netboxEscape(s.name) + '</option>').join('') +
+                    '</select></div>';
+            html += '<div class="form-group"><label>Management IP Address</label>' +
+                    '<input type="text" id="onboardMgmtIp" value="' + netboxEscape(d.management_ip) + '/' + netboxEscape(d.prefix_length) + '" readonly></div>';
+            html += '<div class="form-group"><label>Management Interface</label>' +
+                    '<input type="text" id="onboardMgmtInterface" value="' + netboxEscape(d.management_interface) + '"></div>';
+
+            if (!data.sites.length) {
+                html += '<p style="color:#d32f2f;">No sites exist in NetBox. Create a site first.</p>';
+            }
+            document.getElementById('onboardReview').innerHTML = html;
+        }
+
+        function submitOnboardCreate() {
+            if (!onboardDiscovered) { return; }
+            const siteEl = document.getElementById('onboardSite');
+            if (!siteEl || !siteEl.value) {
+                alert('Select a site.');
+                return;
+            }
+            const hostname = document.getElementById('onboardHostname').value.trim();
+            if (!hostname) {
+                alert('Hostname is required.');
+                return;
+            }
+            const roleEl = document.getElementById('onboardRole');
+            if (!roleEl.value) {
+                alert('Select the device role.');
+                return;
+            }
+            if (!confirm('Create ' + hostname + ' in NetBox?')) { return; }
+            showLoadingOverlay();
+
+            fetch('{{ url_for("netbox_device_create") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hostname: hostname,
+                    model: document.getElementById('onboardModel').value.trim(),
+                    role: roleEl.value,
+                    site_id: siteEl.value,
+                    management_ip: onboardDiscovered.management_ip,
+                    management_interface: document.getElementById('onboardMgmtInterface').value.trim(),
+                    prefix_length: onboardDiscovered.prefix_length,
+                    serial: onboardDiscovered.serial
+                })
+            })
+            .then(async response => ({ ok: response.ok, data: await response.json() }))
+            .then(({ ok, data }) => {
+                hideLoadingOverlay();
+                if (!ok) {
+                    document.getElementById('onboardReview').insertAdjacentHTML('afterbegin',
+                        '<p style="color:#d32f2f; margin-bottom:12px;">' + netboxEscape(data.message || 'Creation failed.') + '</p>');
+                    return;
+                }
+                let html = '<p><strong>' + netboxEscape(data.device_name) + '</strong> was created in NetBox.</p>';
+                html += '<ul style="margin:12px 0 0 18px;">' +
+                        '<li>Device type: ' + netboxEscape(data.device_type) + '</li>' +
+                        '<li>Role: ' + netboxEscape(data.role) + '</li>' +
+                        '<li>Management IP: ' + netboxEscape(data.management_ip) +
+                        (data.management_interface ? ' on ' + netboxEscape(data.management_interface) : '') + '</li>' +
+                        '</ul>';
+                html += '<p style="margin-top:12px;"><a href="' + netboxEscape(data.device_url) +
+                        '" target="_blank" rel="noopener noreferrer">Open the device in NetBox</a></p>';
+                (data.warnings || []).forEach(w => {
+                    html += '<p style="margin-top:12px; color:#ed6c02;">' + netboxEscape(w) + '</p>';
+                });
+                document.getElementById('onboardReview').innerHTML = html;
+                document.getElementById('onboardCreateBtn').style.display = 'none';
+                onboardDiscovered = null;
+            })
+            .catch(error => {
+                hideLoadingOverlay();
+                document.getElementById('onboardReview').insertAdjacentHTML('afterbegin',
+                    '<p style="color:#d32f2f; margin-bottom:12px;">An error occurred: ' + netboxEscape(error.message) + '</p>');
             });
         }
 

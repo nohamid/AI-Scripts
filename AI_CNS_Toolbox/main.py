@@ -25,14 +25,20 @@ logging.basicConfig(level=logging.INFO)
 config_gen_script_path = Path(__file__).parent / 'Self Written Scripts' / 'Config Generator' / 'main.py'
 cns_healthcheck_script_path = Path(__file__).parent / 'Self Written Scripts' / 'CNS_Healthcheck'
 cdp_to_pptx_script_path = Path(__file__).parent / 'Self Written Scripts' / 'CDP_to_PPTX'
+netbox_devicetypes_script_path = Path(__file__).parent / 'Self Written Scripts' / 'NetBox_DeviceTypes'
 
 # Add CNS Health Check to path for imports
 sys.path.insert(0, str(cns_healthcheck_script_path))
 sys.path.insert(0, str(cdp_to_pptx_script_path))
+sys.path.insert(0, str(netbox_devicetypes_script_path))
 
 # Import the healthcheck function
 from healtcheck import run_cns_healthcheck
 from cdp_to_pptx import generate_pptx_from_cdp
+import devicetype_sync
+from devicetype_sync import NetBox as NetBoxClient, SyncError as NetBoxSyncError
+import device_onboard
+from device_onboard import OnboardError
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'your-secret-key-change-this'
@@ -93,6 +99,16 @@ AVAILABLE_SCRIPTS = {
         'name': 'IOS Image Upload',
         'description': 'Upload a Cisco IOS image from your local machine to a lab device via SCP',
         'icon': '💿'
+    },
+    'netbox_devicetypes': {
+        'name': 'NetBox Device Types',
+        'description': 'Compare NetBox with the devicetype-library and import new Cisco device types',
+        'icon': '🗂️'
+    },
+    'netbox_onboard': {
+        'name': 'Onboard Device to NetBox',
+        'description': 'Read hostname, type and management IP from a device via SSH and create it in NetBox',
+        'icon': '🔌'
     },
     'device_inventory': {
         'name': 'Device Inventory',
@@ -774,8 +790,292 @@ def request_entity_too_large(error):
     }), 413
 
 
+# ---------------------------------------------------------------------------
+# NetBox device type sync
+# ---------------------------------------------------------------------------
+# API tokens are kept server side only; the browser session just holds a
+# random handle pointing at the entry below.
+NETBOX_SESSIONS: dict = {}
+NETBOX_SESSIONS_LOCK = threading.Lock()
+NETBOX_SESSION_TTL = 60 * 60  # seconds
+DEFAULT_NETBOX_URL = devicetype_sync.DEFAULT_NETBOX_URL
+
+
+def _prune_netbox_sessions():
+    cutoff = _time.time() - NETBOX_SESSION_TTL
+    with NETBOX_SESSIONS_LOCK:
+        for handle in [k for k, v in NETBOX_SESSIONS.items() if v['created'] < cutoff]:
+            NETBOX_SESSIONS.pop(handle, None)
+
+
+def _store_netbox_session(url, token, verify):
+    _prune_netbox_sessions()
+    handle = uuid4().hex
+    with NETBOX_SESSIONS_LOCK:
+        NETBOX_SESSIONS[handle] = {
+            'url': url,
+            'token': token,
+            'verify': verify,
+            'created': _time.time(),
+        }
+    session['netbox_handle'] = handle
+
+
+def _service_netbox_client():
+    """NetBox client built from the configured service account, or None."""
+    try:
+        config = devicetype_sync.load_config()
+    except NetBoxSyncError:
+        logging.exception('Could not read the NetBox service configuration')
+        return None
+    token = (config.get('NETBOX_TOKEN') or '').strip()
+    if not token or token.startswith('paste-your'):
+        return None
+    verify = str(config.get('NETBOX_VERIFY_SSL', 'true')).strip().lower() not in {
+        'false', '0', 'no',
+    }
+    return NetBoxClient(config.get('NETBOX_URL') or DEFAULT_NETBOX_URL, token, verify=verify)
+
+
+def _get_netbox_client():
+    """Return a NetBox client for the interactive session, else the service account."""
+    _prune_netbox_sessions()
+    handle = session.get('netbox_handle')
+    if handle:
+        with NETBOX_SESSIONS_LOCK:
+            entry = NETBOX_SESSIONS.get(handle)
+        if entry:
+            return NetBoxClient(entry['url'], entry['token'], verify=entry['verify'])
+    return _service_netbox_client()
+
+
+@app.route('/netbox/session', methods=['GET'])
+@login_required
+def netbox_session():
+    """Report whether NetBox access is already available without a login prompt."""
+    _prune_netbox_sessions()
+    mode = 'user' if session.get('netbox_handle') else 'service'
+    netbox = _get_netbox_client()
+    if netbox is None:
+        return jsonify({'authenticated': False, 'mode': 'none'})
+    try:
+        version = netbox.status().get('netbox-version', 'unknown')
+    except Exception:
+        logging.warning('NetBox service account check failed', exc_info=True)
+        return jsonify({'authenticated': False, 'mode': 'none'})
+    return jsonify({
+        'authenticated': True,
+        'mode': mode,
+        'url': netbox.url,
+        'netbox_version': version,
+    })
+
+
+@app.route('/netbox/auth', methods=['POST'])
+@login_required
+def netbox_auth():
+    """Authenticate against NetBox with username/password or an API token."""
+    data = request.get_json() or {}
+    url = (data.get('url') or DEFAULT_NETBOX_URL).strip()
+    token = (data.get('token') or '').strip()
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    verify = bool(data.get('verify_ssl', True))
+
+    if not url.startswith(('http://', 'https://')):
+        return jsonify({'status': 'error', 'message': 'NetBox URL must start with http:// or https://'}), 400
+
+    try:
+        if not token:
+            if not username or not password:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Provide either an API token or a NetBox username and password.'
+                }), 400
+            token = NetBoxClient.provision_token(url, username, password, verify=verify)
+        status = NetBoxClient(url, token, verify=verify).status()
+    except NetBoxSyncError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 401
+    except Exception as exc:
+        logging.exception('NetBox authentication failed')
+        return jsonify({'status': 'error', 'message': f'Could not reach NetBox: {exc}'}), 502
+
+    _store_netbox_session(url, token, verify)
+    return jsonify({
+        'status': 'success',
+        'url': url,
+        'netbox_version': status.get('netbox-version', 'unknown')
+    })
+
+
+@app.route('/netbox/signout', methods=['POST'])
+@login_required
+def netbox_signout():
+    handle = session.pop('netbox_handle', None)
+    if handle:
+        with NETBOX_SESSIONS_LOCK:
+            NETBOX_SESSIONS.pop(handle, None)
+    return jsonify({'status': 'success'})
+
+
+@app.route('/netbox/device-types/check', methods=['POST'])
+@login_required
+def netbox_device_types_check():
+    """Compare NetBox against the devicetype-library Cisco folder."""
+    netbox = _get_netbox_client()
+    if netbox is None:
+        return jsonify({'status': 'auth_required', 'message': 'Authenticate against NetBox first.'}), 401
+
+    try:
+        existing = netbox.cisco_device_types()
+        library = devicetype_sync.load_library()
+        missing = devicetype_sync.find_missing(library, existing)
+    except NetBoxSyncError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 502
+    except Exception as exc:
+        logging.exception('NetBox device type check failed')
+        return jsonify({'status': 'error', 'message': f'Check failed: {exc}'}), 500
+
+    return jsonify({
+        'status': 'success',
+        'existing_count': len(existing),
+        'library_count': len(library),
+        'missing': [
+            {
+                'file': file_name,
+                'model': definition.get('model'),
+                'part_number': definition.get('part_number') or '',
+                'u_height': definition.get('u_height'),
+                'slug': definition.get('slug') or '',
+            }
+            for file_name, definition in missing
+        ],
+    })
+
+
+@app.route('/netbox/device-types/import', methods=['POST'])
+@login_required
+def netbox_device_types_import():
+    """Import the selected device type definitions into NetBox."""
+    netbox = _get_netbox_client()
+    if netbox is None:
+        return jsonify({'status': 'auth_required', 'message': 'Authenticate against NetBox first.'}), 401
+
+    files = (request.get_json() or {}).get('files') or []
+    if not isinstance(files, list) or not files:
+        return jsonify({'status': 'error', 'message': 'No device types selected.'}), 400
+
+    try:
+        library = devicetype_sync.load_library()
+        manufacturer_id = netbox.manufacturer_id()
+    except NetBoxSyncError as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 502
+    except Exception as exc:
+        logging.exception('NetBox device type import setup failed')
+        return jsonify({'status': 'error', 'message': f'Import failed: {exc}'}), 500
+
+    imported, errors = [], []
+    for file_name in files:
+        definition = library.get(file_name)
+        if definition is None:
+            errors.append(f'{file_name}: not part of the Cisco device type library')
+            continue
+        try:
+            netbox.create_device_type(definition, manufacturer_id)
+        except Exception as exc:
+            errors.append(f'{file_name}: {exc}')
+            continue
+        imported.append(definition.get('model') or file_name)
+
+    return jsonify({
+        'status': 'success' if not errors else 'partial',
+        'imported': imported,
+        'imported_count': len(imported),
+        'errors': errors,
+    })
+
+
+@app.route('/netbox/device/discover', methods=['POST'])
+@login_required
+def netbox_device_discover():
+    """SSH to a device and read the details required to register it in NetBox."""
+    netbox = _get_netbox_client()
+    if netbox is None:
+        return jsonify({'status': 'auth_required', 'message': 'Authenticate against NetBox first.'}), 401
+
+    data = request.get_json() or {}
+    ip = (data.get('ip') or '').strip()
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    secret = data.get('secret') or ''
+
+    if not ip or not username or not password:
+        return jsonify({
+            'status': 'error',
+            'message': 'Management IP, username and password are required.'
+        }), 400
+
+    try:
+        discovered = device_onboard.discover_device(ip, username, password, secret)
+        sites = device_onboard.list_sites(netbox)
+    except (OnboardError, NetBoxSyncError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        logging.exception('Device discovery failed')
+        return jsonify({'status': 'error', 'message': f'Discovery failed: {exc}'}), 500
+
+    return jsonify({
+        'status': 'success',
+        'device': discovered,
+        'sites': sites,
+        'roles': [
+            {'key': key, 'name': name}
+            for key, (name, _slug) in device_onboard.DEVICE_ROLES.items()
+        ],
+    })
+
+
+@app.route('/netbox/device/create', methods=['POST'])
+@login_required
+def netbox_device_create():
+    """Create the discovered device in NetBox."""
+    netbox = _get_netbox_client()
+    if netbox is None:
+        return jsonify({'status': 'auth_required', 'message': 'Authenticate against NetBox first.'}), 401
+
+    data = request.get_json() or {}
+    try:
+        site_id = int(data.get('site_id'))
+    except (TypeError, ValueError):
+        return jsonify({'status': 'error', 'message': 'Select a site.'}), 400
+
+    try:
+        result = device_onboard.onboard_device(
+            netbox,
+            hostname=data.get('hostname') or '',
+            role_key=data.get('role') or '',
+            model=data.get('model') or '',
+            site_id=site_id,
+            management_ip=data.get('management_ip') or '',
+            management_interface=data.get('management_interface') or '',
+            prefix_length=int(data.get('prefix_length') or 32),
+            serial=data.get('serial') or '',
+        )
+    except (OnboardError, NetBoxSyncError) as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+    except Exception as exc:
+        logging.exception('Device onboarding failed')
+        return jsonify({'status': 'error', 'message': f'Creation failed: {exc}'}), 500
+
+    return jsonify({'status': 'success', **result})
+
+
 @app.route('/logout')
 def logout():
+    handle = session.get('netbox_handle')
+    if handle:
+        with NETBOX_SESSIONS_LOCK:
+            NETBOX_SESSIONS.pop(handle, None)
     session.clear()
     return redirect(url_for('login'))
 

@@ -7,6 +7,9 @@ genie==23.8
 pyats==23.8
 pandas
 python-pptx>=0.6.21
+# NetBox device type sync (Self Written Scripts/NetBox_DeviceTypes)
+requests>=2.31.0
+PyYAML>=6.0
 # SCP IOS image upload uses paramiko + scp
 paramiko>=3.4.0
 scp>=0.14.5

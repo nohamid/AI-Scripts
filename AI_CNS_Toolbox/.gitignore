@@ -1,0 +1,10 @@
+# Local secrets - never commit
+netbox_config.json
+netbox.env
+.env
+!netbox.env.example
+
+__pycache__/
+*.pyc
+.venv/
+venv/
